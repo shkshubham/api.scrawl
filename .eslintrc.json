@@ -1,0 +1,15 @@
+{
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        }
+    },
+    "extends": ["eslint:recommended", "google"],
+    "rules": {
+        // Additional, per-project rules...
+        "require-jsdoc": "off"
+    }
+}
