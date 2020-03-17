@@ -10,12 +10,13 @@ class Routes {
       return `/${fileName}`;
     }
 
-    static init() {
+
+    static initAPI() {
       fs.readdirSync(__dirname)
           .filter((file) => {
             return (
               file.indexOf('.') !== 0 && file !== this.basename &&
-              file.slice(-3) === '.js'
+          file.slice(-3) === '.js'
             );
           })
           .forEach((file) => {
@@ -28,6 +29,11 @@ class Routes {
               }
             }
           });
+    }
+
+    static init() {
+      this.app.use(express.json());
+      this.initAPI();
     }
 }
 

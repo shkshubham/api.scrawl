@@ -17,7 +17,7 @@ class Init {
 
   static init() {
     this.socket();
-    this.database();
+    // this.database();
     this.routes();
   }
 }

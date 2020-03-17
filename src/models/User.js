@@ -1,4 +1,6 @@
 import Database from '../database';
 import UserSchema from '../schema/user';
 
-export default Database.mongoose.model('Blog', UserSchema);
+const User = Database.mongoose.model('User', UserSchema);
+
+export default User;
