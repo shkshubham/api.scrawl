@@ -11,6 +11,7 @@
     "rules": {
         // Additional, per-project rules...
         "require-jsdoc": "off",
-        "no-undef": "off"
+        "no-undef": "off",
+        "new-cap": "off"
     }
 }
