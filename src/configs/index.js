@@ -1,6 +1,6 @@
-import { config } from "dotenv";
+import {config} from 'dotenv';
 
-config()
+config();
 
 class Config {
     static SERVER_PORT = process.env.SERVER_PORT;

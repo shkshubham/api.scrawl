@@ -10,6 +10,7 @@
     "extends": ["eslint:recommended", "google"],
     "rules": {
         // Additional, per-project rules...
-        "require-jsdoc": "off"
+        "require-jsdoc": "off",
+        "no-undef": "off"
     }
 }
