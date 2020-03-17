@@ -1,16 +1,22 @@
 class Responses {
-  static normal = (res, payload, status=200, message= 'ok') => {
-    return res.status(status).send({
-      message,
-      payload,
-    });
+  static normal(res, data, status=200, message= true) {
+    return res.status(status).send(this.response(message, data));
   }
 
-  static unknown = () => {
-    return res.status(status).send({
-      message: 'Internal Server Error Occured',
-      payload: null,
-    });
+  static error() {
+    return res.status(status).send(this.response());
+  }
+
+  static response = (message, data) => {
+    return {
+      message,
+      data,
+    };
+  }
+
+  static unknown() {
+    return res.status(status).send(
+        this.response('Internal Server Error Occured', null));
   }
 }
 

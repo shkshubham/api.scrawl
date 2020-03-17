@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import express from 'express';
+import morgan from 'morgan';
 
 class Routes {
     static basename = path.basename(__filename);
@@ -31,8 +32,13 @@ class Routes {
           });
     }
 
-    static init() {
+    static initApp() {
       this.app.use(express.json());
+      this.app.use(morgan('tiny'));
+    }
+
+    static init() {
+      this.initApp();
       this.initAPI();
     }
 }
