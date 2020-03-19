@@ -1,6 +1,6 @@
 import Socket from './services/socket.service';
 import Database from './database';
-import Routes from './routes';
+import Routes from './routes/app';
 
 class Init {
   static socket() {

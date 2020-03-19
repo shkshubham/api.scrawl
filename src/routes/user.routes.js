@@ -1,5 +1,5 @@
 import UserController from '../controllers/user.controller';
-import Routes from '.';
+import Routes from './app';
 
 const router = Routes.Router();
 

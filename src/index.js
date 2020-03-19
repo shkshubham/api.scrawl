@@ -1,7 +1,7 @@
 import Config from './configs';
 import Init from './init';
 import Logger from './utils/logger';
-import Routes from './routes';
+import Routes from './routes/app';
 import Database from './database';
 
 Database.init().then(() => {

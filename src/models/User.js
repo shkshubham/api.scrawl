@@ -1,6 +1,26 @@
-import Database from '../database';
-import UserSchema from '../schema/user';
+import {Schema} from 'mongoose';
 
-const User = Database.mongoose.model('User', UserSchema);
+const UserModelSchema = new Schema({
+  username: {
+    type: String,
+    default: null,
+  },
+  name: {
+    type: String,
+    default: null,
+  },
+  email: {
+    type: String,
+    default: null,
+  },
+  avatar: {
+    type: String,
+    default: null,
+  },
+  google_id: {
+    type: String,
+    default: null,
+  },
+});
 
-export default User;
+export default UserModelSchema;

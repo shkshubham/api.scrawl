@@ -7,7 +7,7 @@ class Responses {
     return res.status(status).send(this.response());
   }
 
-  static response = (message, data) => {
+  static response(message, data) {
     return {
       message,
       data,
