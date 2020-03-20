@@ -18,6 +18,7 @@ class LobbyService {
           },
         });
       }
+      Cache.set('lobby', lobbyData);
       return lobbyData;
     }
 }
