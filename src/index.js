@@ -15,4 +15,3 @@ Database.init().then(() => {
 }).catch((error) => {
   Logger.log('log', error);
 });
-

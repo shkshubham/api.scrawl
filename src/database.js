@@ -2,12 +2,16 @@ import {connect} from 'mongoose';
 import Config from './configs';
 import Logger from './utils/logger';
 import UserModelSchema from './models/User';
+import LobbySchema from './models/Lobby';
+
 class Database {
     static User;
+    static Lobby;
     static mongoose;
 
     static initModel() {
       this.User = Database.mongoose.model('User', UserModelSchema);
+      this.Lobby = Database.mongoose.model('Lobby', LobbySchema);
     }
 
     static init() {

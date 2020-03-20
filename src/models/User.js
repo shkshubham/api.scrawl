@@ -17,7 +17,7 @@ const UserModelSchema = new Schema({
     type: String,
     default: null,
   },
-  google_id: {
+  googleId: {
     type: String,
     default: null,
   },
