@@ -14,7 +14,9 @@ class Cache {
     }
 
     static get(key) {
-      return Cache.memoryCache.get(key) || null;
+      const content = Cache.memoryCache.get(key) || null;
+      console.log('Cached', content);
+      return content;
     }
 
     static getAndSet(key, data) {
