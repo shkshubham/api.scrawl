@@ -12,6 +12,7 @@
         // Additional, per-project rules...
         "require-jsdoc": "off",
         "no-undef": "off",
-        "new-cap": "off"
+        "new-cap": "off",
+        "max-len":"off"
     }
 }

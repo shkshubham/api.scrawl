@@ -1,4 +1,9 @@
 import {Schema} from 'mongoose';
+import validator from 'validator';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import Config from '../configs';
+import Database from '../database';
 
 const UserModelSchema = new Schema({
   username: {
@@ -8,10 +13,17 @@ const UserModelSchema = new Schema({
   name: {
     type: String,
     default: null,
+    trim: true,
   },
   email: {
     type: String,
-    default: null,
+    unique: true,
+    lowercase: true,
+    validate: (value) => {
+      if (!validator.isEmail(value)) {
+        throw new Error({error: 'Invalid Email address'});
+      }
+    },
   },
   avatar: {
     type: String,
@@ -21,6 +33,52 @@ const UserModelSchema = new Schema({
     type: String,
     default: null,
   },
+  tokens: [{
+    token: {
+      type: String,
+      required: true,
+    },
+  }],
+  password: {
+    type: String,
+    required: true,
+    minLength: 7,
+  },
 });
+
+
+UserModelSchema.pre('save', async function(next) {
+  // Hash the password before saving the user model
+  // eslint-disable-next-line no-invalid-this
+  const user = this;
+  console.log('00000'. user);
+
+  if (user.isModified('password')) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
+  next();
+});
+
+UserModelSchema.methods.generateAuthToken = async function() {
+  // Generate an auth token for the user
+  const user = this;
+  const token = jwt.sign({_id: user._id}, Config.SECRET_KEY);
+  user.tokens = user.tokens.concat({token});
+  await user.save();
+  return token;
+};
+
+UserModelSchema.statics.findByCredentials = async (email, password) => {
+  // Search for a user by email and password.
+  const user = await Database.User.findOne({email});
+  if (!user) {
+    return null;
+  }
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  if (!isPasswordMatch) {
+    return null;
+  }
+  return user;
+};
 
 export default UserModelSchema;

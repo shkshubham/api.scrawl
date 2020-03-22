@@ -1,3 +1,19 @@
+import {Schema} from 'mongoose';
+
+const RoomUserSchema = new Schema({
+  userId: String,
+  score: String,
+});
+
+const RoomSchema = new Schema({
+  round: String,
+  drawTime: String,
+  ownerId: Object,
+  users: [RoomUserSchema],
+});
+
+
+export default RoomSchema;
 
 // const lobby = {
 //   rounds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],

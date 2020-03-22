@@ -1,3 +1,11 @@
+class RoomService {
+  static createRoom = () => {
+
+  }
+}
+
+export default RoomService;
+
 
 // Users
 // id, name, picture, is_online

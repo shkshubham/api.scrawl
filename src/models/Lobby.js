@@ -1,15 +1,9 @@
 import {Schema} from 'mongoose';
 
 const LobbySchema = new Schema({
-  rounds: {
-    type: Array,
-  },
-  drawTime: {
-    type: Array,
-  },
-  language: {
-    type: Object,
-  },
+  rounds: Array,
+  drawTime: Array,
+  language: Array,
 });
 
 export default LobbySchema;

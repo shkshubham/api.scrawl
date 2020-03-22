@@ -1,10 +1,10 @@
 class Responses {
-  static normal(res, data, status=200, message= true) {
+  static normal(res, data, status=200, message= 'ok') {
     return res.status(status).send(this.response(message, data));
   }
 
-  static error() {
-    return res.status(status).send(this.response());
+  static error(res, message, data = null, status=400) {
+    return res.status(status).send(this.response(message, data));
   }
 
   static response(message, data) {
@@ -14,9 +14,10 @@ class Responses {
     };
   }
 
-  static unknown() {
+  static unknown(res, message='Internal Server Error Occured', status=500) {
     return res.status(status).send(
-        this.response('Internal Server Error Occured', null));
+        this.response(message, null)
+    );
   }
 }
 
