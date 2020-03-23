@@ -7,6 +7,7 @@ class LobbyController {
         const response = await LobbyService.getLobbyDetails();
         return Responses.normal(res, response);
       } catch (err) {
+        console.log(err);
         return Responses.unknown(res);
       }
     }

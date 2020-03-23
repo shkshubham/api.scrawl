@@ -1,5 +1,4 @@
 import Database from '../database';
-import {rounds, hindi, english, drawTime} from '../data/lobby';
 import Cache from '../cache';
 class LobbyService {
     static getLobbyDetails = async () => {
@@ -7,19 +6,35 @@ class LobbyService {
       if (cachedLobbyData) {
         return cachedLobbyData;
       }
+
       const lobbyData = await Database.Lobby.findOne().lean();
-      if (!lobbyData) {
-        return await Database.Lobby.create({
-          rounds,
-          drawTime,
-          language: {
-            hindi,
-            english,
-          },
-        });
+      const foundCategories = await Database.Category.find().select(['name', 'language']).lean();
+      const languageData = {};
+      for (const {language, name, _id} of foundCategories) {
+        const foundKeyData = languageData[language];
+        if (foundKeyData) {
+          languageData[language] = [
+            ...foundKeyData,
+            {
+              name,
+              _id,
+            },
+          ];
+        } else {
+          languageData[language] = [
+            {
+              name,
+              _id,
+            },
+          ];
+        }
       }
-      Cache.set('lobby', lobbyData);
-      return lobbyData;
+      const payload = {
+        ...lobbyData,
+        language: languageData,
+      };
+      Cache.set('lobby', payload);
+      return payload;
     }
 }
 
