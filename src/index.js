@@ -3,7 +3,6 @@ import Init from './init';
 import Logger from './utils/logger';
 import Routes from './routes/app';
 import Database from './database';
-
 Database.init().then(() => {
   Init.init();
   Routes.app.listen(Config.SERVER_PORT, () => {

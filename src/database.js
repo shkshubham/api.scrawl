@@ -3,15 +3,18 @@ import Config from './configs';
 import Logger from './utils/logger';
 import UserModelSchema from './models/User';
 import LobbySchema from './models/Lobby';
+import CategorySchema from './models/Category';
 
 class Database {
     static User;
     static Lobby;
+    static Category;
     static mongoose;
 
     static initModel() {
       this.User = Database.mongoose.model('User', UserModelSchema);
       this.Lobby = Database.mongoose.model('Lobby', LobbySchema);
+      this.Category = Database.mongoose.model('Category', CategorySchema);
     }
 
     static init() {

@@ -1,13 +1,19 @@
 import Database from '../database';
 
 class UserService {
-    static auth = async (body) => {
-      const {email, googleId} = body;
-      body.password = googleId;
+    static auth = async (userData) => {
+      const {email, sub} = userData;
       try {
-        let user = await Database.User.findByCredentials(email, body.password);
+        let user = await Database.User.findByCredentials(email, sub);
         if (!user) {
-          const createdUser = await Database.User.create(body);
+          const {name, picture} = userData;
+          const createdUser = await Database.User.create({
+            email,
+            picture,
+            name,
+            googleId: sub,
+            password: sub,
+          });
           user = createdUser;
         }
         const token = await user.generateAuthToken();
