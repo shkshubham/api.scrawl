@@ -44,6 +44,7 @@ const UserModelSchema = new Schema({
     required: true,
     minLength: 7,
   },
+  __v: {type: Number, select: false},
 });
 
 
