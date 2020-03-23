@@ -12,20 +12,18 @@ class LobbyService {
       const languageData = {};
       for (const {language, name, _id} of foundCategories) {
         const foundKeyData = languageData[language];
+        const newData = {
+          name,
+          _id,
+        };
         if (foundKeyData) {
           languageData[language] = [
             ...foundKeyData,
-            {
-              name,
-              _id,
-            },
+            newData,
           ];
         } else {
           languageData[language] = [
-            {
-              name,
-              _id,
-            },
+            newData,
           ];
         }
       }
