@@ -17,21 +17,11 @@ class UserService {
           user = createdUser;
         }
         const token = await user.generateAuthToken();
-        const {
-          _id,
-          username,
-          name,
-          avatar,
-          googleId,
-        } = user;
-        return {user: {
-          _id,
-          email,
-          username,
-          name,
-          avatar,
-          googleId,
-        }, token};
+        const userData = JSON.parse(JSON.stringify(user));
+        delete userData.password;
+        delete userData.tokens;
+        delete userData.__v;
+        return {user: userData, token};
       } catch (error) {
         return {
           error: error.message,
