@@ -15,6 +15,10 @@ const UserModelSchema = new Schema({
     default: null,
     trim: true,
   },
+  fullName: {
+    type: String,
+    default: null,
+  },
   email: {
     type: String,
     unique: true,
