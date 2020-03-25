@@ -18,7 +18,7 @@ class UserController {
         req.token = response.token;
         return Responses.normal(res, response);
       } catch (err) {
-        return Responses.unknown(res);
+        return Responses.unknown(res, err);
       }
     }
 
@@ -26,16 +26,19 @@ class UserController {
       try {
         return Responses.normal(res, req.user);
       } catch (error) {
-        return Responses.unknown(res);
+        return Responses.unknown(res, err);
       }
     }
 
     static logout = async (req, res) => {
       try {
         const response = await UserService.logout(req);
-        return Responses.normal(res, response.message);
+        if (response.logout) {
+          return Responses.normal(res, null, 200, response.message);
+        }
+        return Responses.error(res, response.message);
       } catch (err) {
-        return Responses.unknown(res);
+        return Responses.unknown(res, err);
       }
     }
 }

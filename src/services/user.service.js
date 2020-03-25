@@ -42,9 +42,13 @@ class UserService {
         await userDetail.save();
         return {
           message: 'Logged Out Successfully',
+          logout: true,
         };
       } else {
-        throw new Error('No Token found');
+        return {
+          message: 'Invalid Token',
+          logout: false,
+        };
       }
     }
 }
