@@ -3,6 +3,6 @@ import RoomController from '../controllers/room.controller';
 import Auth from '../middlewares/auth';
 const router = Routes.Router();
 
-router.post('/create', Auth.UserAccess, RoomController.createRoom);
+router.get('/create', Auth.UserAccess, RoomController.createRoom);
 
 export default router;
