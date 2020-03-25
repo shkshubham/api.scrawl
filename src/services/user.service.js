@@ -32,6 +32,21 @@ class UserService {
     static async getUserDetailById(_id) {
       return await Database.User.findById(_id);
     }
+
+    static async logout(req) {
+      const {user, token} = req;
+      const userDetail = await this.getUserDetailById(user._id);
+      const foundTokenIndex = userDetail.tokens.findIndex((data) => data.token === token);
+      if (foundTokenIndex > -1) {
+        userDetail.tokens.splice(foundTokenIndex, 1);
+        await userDetail.save();
+        return {
+          message: 'Logged Out Successfully',
+        };
+      } else {
+        throw new Error('No Token found');
+      }
+    }
 }
 
 export default UserService;

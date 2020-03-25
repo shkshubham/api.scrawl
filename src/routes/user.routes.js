@@ -5,6 +5,7 @@ import Auth from '../middlewares/auth';
 const router = Routes.Router();
 
 router.post('/auth', Auth.GuestAccess, UserController.auth);
+router.get('/logout', Auth.UserAccess, UserController.logout);
 router.get('/profile', Auth.UserAccess, UserController.profile);
 
 export default router;

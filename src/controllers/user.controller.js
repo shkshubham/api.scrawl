@@ -29,6 +29,15 @@ class UserController {
         return Responses.unknown(res);
       }
     }
+
+    static logout = async (req, res) => {
+      try {
+        const response = await UserService.logout(req);
+        return Responses.normal(res, response.message);
+      } catch (err) {
+        return Responses.unknown(res);
+      }
+    }
 }
 
 
