@@ -1,11 +1,13 @@
 import Responses from '../utils/responses';
+import RoomService from '../services/room.service';
 
 class LobbyController {
-    static createRoom = async (_, res) => {
+    static createRoom = async (req, res) => {
       try {
-        return Responses.normal(res, {});
+        const response = await RoomService.createRoom(req);
+        return Responses.normal(res, response);
       } catch (err) {
-        return Responses.unknown(res);
+        return Responses.unknown(res, err);
       }
     }
 }

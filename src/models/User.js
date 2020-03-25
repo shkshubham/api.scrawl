@@ -52,8 +52,6 @@ UserModelSchema.pre('save', async function(next) {
   // Hash the password before saving the user model
   // eslint-disable-next-line no-invalid-this
   const user = this;
-  console.log('00000'. user);
-
   if (user.isModified('password')) {
     user.password = await bcrypt.hash(user.password, 8);
   }

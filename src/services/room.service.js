@@ -1,11 +1,18 @@
+import Database from '../database';
+import Utils from '../utils';
 class RoomService {
-  static createRoom = () => {
-
+  static createRoom = async (req) => {
+    const {user} = req;
+    const roomCode = Utils.generateRandomString();
+    const room = await Database.Room.create({
+      roomCode,
+      ownerId: user._id,
+    });
+    return room;
   }
 }
 
 export default RoomService;
-
 
 // Users
 // id, name, picture, is_online
