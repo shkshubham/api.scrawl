@@ -2,7 +2,14 @@ import {Schema} from 'mongoose';
 
 const RoomUserSchema = new Schema({
   userId: String,
-  score: String,
+  score: {
+    type: String,
+    default: '0',
+  },
+  isOwner: {
+    type: String,
+    default: false,
+  },
 });
 
 const RoomSchema = new Schema({

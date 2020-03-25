@@ -10,9 +10,16 @@ class RoomService {
       drawTime: drawTime[2],
       rounds: rounds[2],
       categoryId: '5e78f803125a036cb368fbc4',
-      ownerId: user._id,
+      users: [{
+        userId: user._id,
+        isOwner: true,
+      }],
     });
     return room;
+  }
+
+  static getRoomDetail = async (req) => {
+    // const?
   }
 }
 
