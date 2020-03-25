@@ -6,7 +6,7 @@ import Logger from '../utils/logger';
 
 class Auth {
   static logReqBody(body) {
-    Logger.log('log', req.body);
+    Logger.log('log', body);
   }
   static async getUserTokenAndData(req) {
     const authHeader = req.header('Authorization');
