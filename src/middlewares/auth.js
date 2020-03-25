@@ -2,8 +2,12 @@ import jwt from 'jsonwebtoken';
 import Database from '../database';
 import Config from '../configs';
 import Responses from '../utils/responses';
+import Logger from '../utils/logger';
 
 class Auth {
+  static logReqBody(body) {
+    Logger.log('log', req.body);
+  }
   static async getUserTokenAndData(req) {
     const authHeader = req.header('Authorization');
     if (!authHeader) {
@@ -22,6 +26,7 @@ class Auth {
 
   static async UserAccess(req, res, next) {
     try {
+      Auth.logReqBody(req.body);
       const {user, token} = await Auth.getUserTokenAndData(req);
       if (!user) {
         return res.status(401).send(Responses.response('Please Log In'));
@@ -43,6 +48,7 @@ class Auth {
   }
 
   static async GuestAccess(req, res, next) {
+    Auth.logReqBody(req.body);
     try {
       const {user} = await Auth.getUserTokenAndData(req);
       if (user) {

@@ -1,3 +1,5 @@
+import Logger from './logger';
+
 class Responses {
   static normal(res, data, status=200, message= 'ok') {
     return res.status(status).send(this.response(message, data));
@@ -15,7 +17,7 @@ class Responses {
   }
 
   static unknown(res, err, message='Internal Server Error Occured', status=500) {
-    console.log(err);
+    Logger.log('log', req.body);
     return res.status(status).send(
         this.response(message, null)
     );
