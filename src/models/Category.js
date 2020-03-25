@@ -5,6 +5,6 @@ const CategorySchema = new Schema({
   words: Array,
   language: String,
   __v: {type: Number, select: false},
-});
+}, {timestamps: true});
 
 export default CategorySchema;

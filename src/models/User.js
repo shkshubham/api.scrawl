@@ -45,7 +45,7 @@ const UserModelSchema = new Schema({
     minLength: 7,
   },
   __v: {type: Number, select: false},
-});
+}, {timestamps: true});
 
 
 UserModelSchema.pre('save', async function(next) {

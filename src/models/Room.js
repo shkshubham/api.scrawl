@@ -24,6 +24,7 @@ const RoomSchema = new Schema({
     type: [RoomUserSchema],
     default: null,
   },
-});
+  __v: {type: Number, select: false},
+}, {timestamps: true});
 
 export default RoomSchema;

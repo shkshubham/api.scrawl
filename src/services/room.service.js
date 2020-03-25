@@ -8,7 +8,7 @@ class RoomService {
       roomCode,
       ownerId: user._id,
     });
-    return room;
+    return room.roomCode;
   }
 }
 
