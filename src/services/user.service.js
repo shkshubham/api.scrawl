@@ -2,8 +2,8 @@ import Database from '../database';
 
 class UserService {
     static auth = async (userData) => {
-      const {email, sub} = userData;
       try {
+        const {email, sub} = userData;
         let user = await Database.User.findByCredentials(email, sub);
         if (!user) {
           const {name, picture} = userData;
@@ -17,12 +17,13 @@ class UserService {
           user = createdUser;
         }
         const token = await user.generateAuthToken();
-        const userData = JSON.parse(JSON.stringify(user));
-        delete userData.password;
-        delete userData.tokens;
-        delete userData.__v;
-        return {user: userData, token};
+        const userDataDeepCopy = JSON.parse(JSON.stringify(user));
+        delete userDataDeepCopy.password;
+        delete userDataDeepCopy.tokens;
+        delete userDataDeepCopy.__v;
+        return {user: userDataDeepCopy, token};
       } catch (error) {
+        console.log('======123214=====', error);
         return {
           error: error.message,
         };

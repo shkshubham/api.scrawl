@@ -10,8 +10,6 @@ class UserController {
         if (!userDetail) {
           return Responses.error(res, 'Please provide valid token');
         }
-        console.log('-----------', userDetail, req.body.token);
-
         const response = await UserService.auth(userDetail);
         if (response.error) {
           return Responses.error(res, response.error);
