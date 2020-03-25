@@ -1,14 +1,18 @@
 import Database from '../database';
 import Utils from '../utils';
+import {drawTime, rounds} from '../data/lobby';
 class RoomService {
   static createRoom = async (req) => {
     const {user} = req;
     const roomCode = Utils.generateRandomString();
     const room = await Database.Room.create({
       roomCode,
+      drawTime: drawTime[2],
+      rounds: rounds[2],
+      categoryId: '5e78f803125a036cb368fbc4',
       ownerId: user._id,
     });
-    return room.roomCode;
+    return room;
   }
 }
 

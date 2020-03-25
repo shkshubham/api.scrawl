@@ -7,7 +7,7 @@ const RoomUserSchema = new Schema({
 
 const RoomSchema = new Schema({
   roomCode: String,
-  round: {
+  rounds: {
     type: String,
     default: null,
   },
