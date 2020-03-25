@@ -6,7 +6,6 @@ class UserService {
       try {
         let user = await Database.User.findByCredentials(email, sub);
         if (!user) {
-          console.log('=-------------', userData);
           const {name, picture} = userData;
           const createdUser = await Database.User.create({
             email,
