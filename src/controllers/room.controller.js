@@ -10,6 +10,22 @@ class LobbyController {
         return Responses.unknown(res, err);
       }
     }
+
+    static roomDetail = async (req, res) => {
+      try {
+        const {roomCode} = req.params;
+        if (!roomCode) {
+          return Responses.error(res, 'Please provide roomCode');
+        }
+        const room = await RoomService.getRoomDetail(roomCode);
+        if (room) {
+          return Responses.normal(res, room);
+        }
+        return Responses.error(res, 'Please provide valid roomCode');
+      } catch (err) {
+        return Responses.unknown(res, err);
+      }
+    }
 }
 
 export default LobbyController;

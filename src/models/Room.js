@@ -1,14 +1,13 @@
 import {Schema} from 'mongoose';
 
 const RoomUserSchema = new Schema({
-  userId: String,
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
   score: {
     type: String,
     default: '0',
-  },
-  isOwner: {
-    type: String,
-    default: false,
   },
 });
 
@@ -23,14 +22,12 @@ const RoomSchema = new Schema({
     default: null,
   },
   categoryId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     default: null,
+    ref: 'Category',
   },
-  ownerId: Object,
-  users: {
-    type: [RoomUserSchema],
-    default: null,
-  },
+  owner: RoomUserSchema,
+  users: [RoomUserSchema],
   __v: {type: Number, select: false},
 }, {timestamps: true});
 
