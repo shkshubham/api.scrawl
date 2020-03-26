@@ -32,11 +32,15 @@ class LobbyController {
         return Responses.error(res, 'Please provide roomCode');
       }
       try {
-        // const room = await RoomService.joinRoom(roomCode);
-        // if (room) {
-        //   return Responses.normal(res, room);
-        // }
-        return Responses.error(res, 'Please provide valid roomCode');
+        const foundRoom = await RoomService.getRoomDetail(roomCode);
+        if (!foundRoom) {
+          return Responses.error(res, 'Please provide valid roomCode');
+        }
+        if (foundRoom.owner.user._id.toString() === req.user._id) {
+          return Responses.error(res, 'Owner can not join the room');
+        }
+        const {room, message} = await RoomService.roomJoin(req.user._id, foundRoom);
+        return Responses.normal(res, room, 200, message);
       } catch (err) {
         return Responses.unknown(res, err);
       }

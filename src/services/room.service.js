@@ -18,53 +18,39 @@ class RoomService {
   }
 
   static getRoomDetail = async (roomCode) => {
-    const userFields = ['name', 'picture'];
+    const userFields = ['name', 'picture', 'email'];
     return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields) || null;
   }
 
-  findRoomByRoomCode = async () => {
-    return await Database.Room.findOne().lean();
+  static findRoomByRoomCode = async (roomCode) => {
+    return await Database.Room.findOne({
+      roomCode,
+    });
   }
 
-  static roomJoin = async (roomCode) => {
-    // const roomDetails = await Database.Room.findOne().lean();
+  static roomJoin = async (userId, room) => {
+    let isImMemberOfRoom = null;
+
+    if (room.users.length) {
+      isImMemberOfRoom = room.users.find((userData) => userData.user._id.toString() === userId);
+    }
+    if (isImMemberOfRoom) {
+      return {
+        room,
+        message: 'Room Joined',
+      };
+    }
+
+    room.users = room.users.concat({
+      user: userId,
+    });
+
+    await room.save();
+    return {
+      room: await RoomService.getRoomDetail(room.roomCode),
+      message: 'Room Joined',
+    };
   }
 }
 
 export default RoomService;
-
-// Users
-// id, name, picture, is_online
-
-// Score
-// id, user_id, total_score
-
-// list of matches
-// id, user_id, room_id
-
-// Room Create
-// id, name, language, rounds, drawtime, customWords[] if any
-
-// RoomUser
-// id, room_id, user_id, score
-
-// Custom Words
-// id, words Array, room_id
-
-// Start Game
-
-// Categories
-// id, name, words[], language_id
-
-// Sub categories
-// id, category_id, words[], name
-
-// Rounds
-// id, rounds
-
-// Langauge
-// id, name
-
-// game
-
-// Drawing data => path, score, rounds, time, correct answer
