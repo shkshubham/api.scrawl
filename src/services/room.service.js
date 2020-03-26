@@ -21,6 +21,14 @@ class RoomService {
     const userFields = ['name', 'picture'];
     return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields) || null;
   }
+
+  findRoomByRoomCode = async () => {
+    return await Database.Room.findOne().lean();
+  }
+
+  static roomJoin = async (roomCode) => {
+    // const roomDetails = await Database.Room.findOne().lean();
+  }
 }
 
 export default RoomService;
