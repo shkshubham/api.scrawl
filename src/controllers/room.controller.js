@@ -37,7 +37,7 @@ class LobbyController {
           return Responses.error(res, 'Please provide valid roomCode');
         }
         if (foundRoom.owner.user._id.toString() === req.user._id) {
-          return Responses.error(res, 'Owner can not join the room');
+          return Responses.normal(res, foundRoom, 200, 'Room Joined');
         }
         const {room, message} = await RoomService.roomJoin(req.user._id, foundRoom);
         return Responses.normal(res, room, 200, message);
