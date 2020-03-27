@@ -1,7 +1,7 @@
 import Logger from './logger';
 
 class Responses {
-  static normal(res, data, status=200, message= 'ok') {
+  static normal(res, data, message= 'ok', status=200) {
     return res.status(status).send(this.response(message, data));
   }
 

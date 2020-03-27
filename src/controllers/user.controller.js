@@ -34,7 +34,7 @@ class UserController {
       try {
         const response = await UserService.logout(req);
         if (response.logout) {
-          return Responses.normal(res, null, 200, response.message);
+          return Responses.normal(res, null, response.message);
         }
         return Responses.error(res, response.message);
       } catch (err) {

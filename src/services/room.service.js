@@ -29,13 +29,27 @@ class RoomService {
     });
   }
 
-  static roomJoin = async (userId, room) => {
-    let isImMemberOfRoom = null;
-
-    if (room.users.length) {
-      isImMemberOfRoom = room.users.find((userData) => userData.user._id.toString() === userId);
+  static findOnRoom = (room) => {
+    const payload = {
+      isMemeber: false,
+      index: -1,
+    };
+    if (!room.users.length) {
+      return payload;
     }
-    if (isImMemberOfRoom) {
+    const foundIndex = room.users.findIndex((userData) => userData.user._id.toString() === userId);
+    if (foundIndex > -1) {
+      payload.isMemeber = true;
+      payload.index = foundIndex;
+      return payload;
+    }
+    return payload;
+  }
+
+  static roomJoin = async (userId, room) => {
+    const {isMemeber} = RoomService.findOnRoom(room);
+
+    if (isMemeber) {
       return {
         room,
         message: 'Room Joined',
@@ -51,6 +65,35 @@ class RoomService {
       room: await RoomService.getRoomDetail(room.roomCode),
       message: 'Room Joined',
     };
+  }
+
+  static findIsRoomOwner = (room, userId) => {
+    return room.owner.user._id.toString() === userId;
+  }
+
+  static leaveRoom = async (userId, room) => {
+    const {isMemeber, index} = RoomService.findOnRoom(room);
+    if (!isMemeber) {
+      const isOwner = RoomService.findIsRoomOwner(room, userId);
+      if (isOwner) {
+        if (room.users.length) {
+          const userData = JSON.parse(JSON.stringify(room.users[0]));
+          room.users = room.users.splice(0, 1);
+          room.owner = {
+            user: userData.user._id,
+            score: userData.user.score,
+          };
+          await room.save();
+        } else {
+          await room.delete();
+          return 'Room Deleted';
+        }
+      }
+      return 'You can not the member of the room';
+    }
+    room.users = room.users.splice(index, 1);
+    await room.save();
+    return 'Leaved Room';
   }
 }
 

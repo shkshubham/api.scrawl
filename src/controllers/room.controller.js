@@ -36,11 +36,28 @@ class LobbyController {
         if (!foundRoom) {
           return Responses.error(res, 'Please provide valid roomCode');
         }
-        if (foundRoom.owner.user._id.toString() === req.user._id) {
-          return Responses.normal(res, foundRoom, 200, 'Room Joined');
+        if (RoomService.findIsRoomOwner(foundRoom, req.user._id)) {
+          return Responses.normal(res, foundRoom, 'Room Joined');
         }
         const {room, message} = await RoomService.roomJoin(req.user._id, foundRoom);
-        return Responses.normal(res, room, 200, message);
+        return Responses.normal(res, room, message);
+      } catch (err) {
+        return Responses.unknown(res, err);
+      }
+    }
+
+    static leaveRoom = async (req, res) => {
+      const {roomCode} = req.params;
+      if (!roomCode) {
+        return Responses.error(res, 'Please provide roomCode');
+      }
+      try {
+        const foundRoom = await RoomService.getRoomDetail(roomCode);
+        if (!foundRoom) {
+          return Responses.error(res, 'Please provide valid roomCode');
+        }
+        const response = await RoomService.leaveRoom(req.user._id, foundRoom);
+        return Responses.normal(res, null, response);
       } catch (err) {
         return Responses.unknown(res, err);
       }
