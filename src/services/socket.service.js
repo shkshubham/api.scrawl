@@ -1,16 +1,11 @@
-import {createServer} from 'http';
 import socket from 'socket.io';
-import Config from '../configs';
 import Logger from '../utils/logger';
 
 class Socket {
     static io;
     static client;
-    static server;
-
-    static init() {
-      this.server = createServer();
-      this.io = socket(this.server);
+    static init(server) {
+      this.io = socket(server);
       this.io.on('connection', (client) => {
         Logger.log('table', {
           'CONTECTED': client.id,
@@ -27,20 +22,10 @@ class Socket {
           this.io.emit('DRAWING', data);
         });
       });
-      this.startSocketServer();
     }
 
     static emit(eventName, data) {
       this.io.emit(eventName, data);
-    }
-
-    static startSocketServer() {
-      this.server.listen(Config.SOCKET_PORT, () => {
-        Logger.log('table', {
-          'Socket Server Started': true,
-          'Port': Config.SOCKET_PORT,
-        });
-      });
     }
 }
 

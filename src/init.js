@@ -4,8 +4,8 @@ import Routes from './routes/app';
 import {category, rounds, drawTime} from './data/lobby';
 
 class Init {
-  static socket() {
-    Socket.init();
+  static socket(server) {
+    Socket.init(server);
   }
 
   static database() {
@@ -16,8 +16,8 @@ class Init {
     Routes.init();
   }
 
-  static init() {
-    this.socket();
+  static init(server) {
+    this.socket(server);
     this.routes();
     this.data();
   }
