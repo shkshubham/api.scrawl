@@ -1,6 +1,7 @@
 import Database from '../database';
 import Utils from '../utils';
 import {drawTime, rounds} from '../data/lobby';
+import Socket from './socket.service';
 class RoomService {
   static createRoom = async (req) => {
     const {user} = req;
@@ -29,7 +30,7 @@ class RoomService {
     });
   }
 
-  static findOnRoom = (room) => {
+  static findOnRoom = (room, userId) => {
     const payload = {
       isMemeber: false,
       index: -1,
@@ -47,7 +48,7 @@ class RoomService {
   }
 
   static roomJoin = async (userId, room) => {
-    const {isMemeber} = RoomService.findOnRoom(room);
+    const {isMemeber} = RoomService.findOnRoom(room, userId);
 
     if (isMemeber) {
       return {
@@ -61,8 +62,13 @@ class RoomService {
     });
 
     await room.save();
+    const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
+    Socket.emit(room.roomCode, {
+      type: 'ROOM_JOINED',
+      data: roomAfterUpdate.users,
+    });
     return {
-      room: await RoomService.getRoomDetail(room.roomCode),
+      room: roomAfterUpdate,
       message: 'Room Joined',
     };
   }
@@ -72,7 +78,7 @@ class RoomService {
   }
 
   static leaveRoom = async (userId, room) => {
-    const {isMemeber, index} = RoomService.findOnRoom(room);
+    const {isMemeber, index} = RoomService.findOnRoom(room, userId);
     if (!isMemeber) {
       const isOwner = RoomService.findIsRoomOwner(room, userId);
       if (isOwner) {
