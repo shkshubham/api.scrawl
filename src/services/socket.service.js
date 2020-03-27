@@ -25,6 +25,7 @@ class Socket {
     }
 
     static emit(eventName, data) {
+      console.log(eventName, data);
       this.io.emit(eventName, data);
     }
 }
