@@ -51,6 +51,10 @@ class RoomService {
     const {isMemeber} = RoomService.findOnRoom(room, userId);
 
     if (isMemeber) {
+      Socket.emit(room.roomCode, {
+        type: 'ROOM_JOINED',
+        data: roomAfterUpdate.users,
+      });
       return {
         room,
         message: 'Room Joined',
