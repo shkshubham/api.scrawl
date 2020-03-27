@@ -9,7 +9,7 @@ class RoomService {
       roomCode,
       drawTime: drawTime[2],
       rounds: rounds[2],
-      categoryId: '5e78f803125a036cb368fbc4',
+      category: '5e78f803125a036cb368fbc4',
       owner: {
         user: user._id,
       },
@@ -19,7 +19,8 @@ class RoomService {
 
   static getRoomDetail = async (roomCode) => {
     const userFields = ['name', 'picture', 'email'];
-    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields) || null;
+    const categoryFields = ['name', 'language'];
+    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields).populate('category', categoryFields) || null;
   }
 
   static findRoomByRoomCode = async (roomCode) => {

@@ -21,7 +21,7 @@ const RoomSchema = new Schema({
     type: String,
     default: null,
   },
-  categoryId: {
+  category: {
     type: Schema.Types.ObjectId,
     default: null,
     ref: 'Category',
