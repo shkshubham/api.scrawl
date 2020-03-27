@@ -53,7 +53,7 @@ class RoomService {
     if (isMemeber) {
       Socket.emit(room.roomCode, {
         type: 'ROOM_JOINED',
-        data: roomAfterUpdate.users,
+        data: room.users,
       });
       return {
         room,
