@@ -88,22 +88,32 @@ class RoomService {
         if (room.users.length) {
           const userData = JSON.parse(JSON.stringify(room.users[0]));
           room.users = room.users.splice(0, 1);
-          const owner = {
+          const data = {
+            user: {
+              _id: userData.user._id,
+              score: userData.user.score,
+              picture: userData.user.picture,
+              name: userData.user.name,
+            },
+          };
+          room.owner = {
             user: userData.user._id,
             score: userData.user.score,
           };
-          room.owner = owner;
+          room.users.splice(0, 1);
           Socket.emit(room.roomCode, {
             type: 'ROOM_OWNER',
-            data: owner,
+            data,
           });
           await room.save();
+          return 'Leaved Room';
         } else {
           await room.delete();
           return 'Room Deleted';
         }
+      } else {
+        return 'You can not the member of the room';
       }
-      return 'You can not the member of the room';
     }
     room.users.splice(index, 1);
     Socket.emit(room.roomCode, {
