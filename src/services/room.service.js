@@ -52,7 +52,7 @@ class RoomService {
 
     if (isMemeber) {
       Socket.emit(room.roomCode, {
-        type: 'ROOM_JOINED',
+        type: 'ROOM_JOINED_lEAVED',
         data: room.users,
       });
       return {
@@ -64,13 +64,12 @@ class RoomService {
     room.users = room.users.concat({
       user: userId,
     });
-
-    await room.save();
-    const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     Socket.emit(room.roomCode, {
-      type: 'ROOM_JOINED',
+      type: 'ROOM_JOINED_lEAVED',
       data: roomAfterUpdate.users,
     });
+    await room.save();
+    const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     return {
       room: roomAfterUpdate,
       message: 'Room Joined',
@@ -89,10 +88,15 @@ class RoomService {
         if (room.users.length) {
           const userData = JSON.parse(JSON.stringify(room.users[0]));
           room.users = room.users.splice(0, 1);
-          room.owner = {
+          const owner = {
             user: userData.user._id,
             score: userData.user.score,
           };
+          room.owner = owner;
+          Socket.emit(room.roomCode, {
+            type: 'ROOM_OWNER',
+            data: owner,
+          });
           await room.save();
         } else {
           await room.delete();
@@ -102,6 +106,10 @@ class RoomService {
       return 'You can not the member of the room';
     }
     room.users = room.users.splice(index, 1);
+    Socket.emit(room.roomCode, {
+      type: 'ROOM_JOINED_lEAVED',
+      data: room.users,
+    });
     await room.save();
     return 'Leaved Room';
   }
