@@ -105,6 +105,10 @@ class RoomService {
             type: 'ROOM_OWNER',
             data,
           });
+          Socket.emit(room.roomCode, {
+            type: 'ROOM_JOINED_LEAVED',
+            data: room.users,
+          });
           await room.save();
           return 'Leaved Room';
         } else {
