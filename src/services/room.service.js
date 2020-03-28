@@ -100,7 +100,6 @@ class RoomService {
             user: userData.user._id,
             score: userData.user.score,
           };
-          room.users.splice(0, 1);
           Socket.emit(room.roomCode, {
             type: 'ROOM_OWNER',
             data,
