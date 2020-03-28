@@ -65,11 +65,11 @@ class RoomService {
       user: userId,
     });
     await room.save();
+    const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     Socket.emit(room.roomCode, {
       type: 'ROOM_JOINED_lEAVED',
       data: roomAfterUpdate.users,
     });
-    const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     return {
       room: roomAfterUpdate,
       message: 'Room Joined',
