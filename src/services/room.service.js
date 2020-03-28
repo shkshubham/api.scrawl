@@ -52,7 +52,7 @@ class RoomService {
 
     if (isMemeber) {
       Socket.emit(room.roomCode, {
-        type: 'ROOM_JOINED_lEAVED',
+        type: 'ROOM_JOINED_LEAVED',
         data: room.users,
       });
       return {
@@ -67,7 +67,7 @@ class RoomService {
     await room.save();
     const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     Socket.emit(room.roomCode, {
-      type: 'ROOM_JOINED_lEAVED',
+      type: 'ROOM_JOINED_LEAVED',
       data: roomAfterUpdate.users,
     });
     return {
@@ -107,7 +107,7 @@ class RoomService {
     }
     room.users = room.users.splice(index, 1);
     Socket.emit(room.roomCode, {
-      type: 'ROOM_JOINED_lEAVED',
+      type: 'ROOM_JOINED_LEAVED',
       data: room.users,
     });
     await room.save();
