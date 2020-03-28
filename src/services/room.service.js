@@ -105,11 +105,11 @@ class RoomService {
       }
       return 'You can not the member of the room';
     }
+    room.users.splice(index, 1);
     Socket.emit(room.roomCode, {
       type: 'ROOM_JOINED_LEAVED',
       data: room.users,
     });
-    room.users.splice(index, 1);
     await room.save();
     return 'Leaved Room';
   }
