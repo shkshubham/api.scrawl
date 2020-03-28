@@ -87,7 +87,6 @@ class RoomService {
       if (isOwner) {
         if (room.users.length) {
           const userData = JSON.parse(JSON.stringify(room.users[0]));
-          room.users = room.users.splice(0, 1);
           const data = {
             user: {
               _id: userData.user._id,
@@ -100,6 +99,7 @@ class RoomService {
             user: userData.user._id,
             score: userData.user.score,
           };
+          room.users.splice(0, 1);
           Socket.emit(room.roomCode, {
             type: 'ROOM_OWNER',
             data,
