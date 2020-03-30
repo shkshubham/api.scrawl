@@ -15,7 +15,7 @@ class Socket {
           Logger.log('table', {
             'ROOM_CLIENT_EDIT': data,
           });
-          Socket.emit('ROOM_EDIT', data);
+          Socket.emit(data.roomCode, data.data);
         });
         client.on('disconnect', () => {
           Logger.log('table', {
