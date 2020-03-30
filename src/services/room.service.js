@@ -139,7 +139,9 @@ class RoomService {
     });
     Socket.emit(room.roomCode, {
       type: 'KICKED_PLAYER',
-      data: kickedPlay[0].user._id,
+      data: {
+        id: kickedPlay[0].user._id,
+      },
     });
     await room.save();
     return 'Play Kicked';
