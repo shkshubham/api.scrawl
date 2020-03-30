@@ -93,7 +93,7 @@ class LobbyController {
         return Responses.error(res, 'Please provide roomCode');
       }
       try {
-        const foundRoom = await RoomService.findRoom(roomCode);
+        const foundRoom = await RoomService.findRoomByRoomCode(roomCode);
         if (!foundRoom) {
           return Responses.error(res, 'Please provide valid roomCode');
         }

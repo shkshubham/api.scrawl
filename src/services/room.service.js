@@ -24,10 +24,6 @@ class RoomService {
     return room;
   }
 
-  static findRoom = async (roomCode) => {
-    return await Database.Room.findOne({roomCode});
-  }
-
   static getRoomDetail = async (roomCode) => {
     const userFields = ['name', 'picture', 'email'];
     const categoryFields = ['name', 'language'];
@@ -168,6 +164,26 @@ class RoomService {
 
   static removeUserFromRoom = (room, index) => {
     return room.users.splice(index, 1);
+  }
+
+  static async processRoomEdit({roomCode, data}) {
+    Socket.emit(roomCode, {
+      type: RoomService.types.ROOM_EDIT,
+      data,
+    });
+    const room = await findRoomByRoomCode(roomCode);
+    switch (type) {
+      case 'Round':
+        room.rounds = data.value;
+        break;
+      case 'Draw Time':
+        room.drawTime = data.value;
+        break;
+      case 'Sub_Category':
+        // room.category = data.value;
+        break;
+    }
+    await room.save();
   }
 }
 

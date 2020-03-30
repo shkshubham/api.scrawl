@@ -1,5 +1,6 @@
 import socket from 'socket.io';
 import Logger from '../utils/logger';
+import RoomService from './room.service';
 
 class Socket {
     static io;
@@ -15,10 +16,7 @@ class Socket {
           Logger.log('table', {
             'ROOM_CLIENT_EDIT': data,
           });
-          Socket.emit(data.roomCode, {
-            type: 'ROOM_EDIT',
-            data: data.data,
-          });
+          RoomService.processRoomEdit(data);
         });
         client.on('disconnect', () => {
           Logger.log('table', {
