@@ -62,6 +62,22 @@ class LobbyController {
         return Responses.unknown(res, err);
       }
     }
+    static kickPlay = async (req, res) => {
+      const {roomCode} = req.params;
+      if (!roomCode) {
+        return Responses.error(res, 'Please provide roomCode');
+      }
+      try {
+        const foundRoom = await RoomService.getRoomDetail(roomCode);
+        if (!foundRoom) {
+          return Responses.error(res, 'Please provide valid roomCode');
+        }
+        const response = await RoomService.kickPlay(req.body.userId, foundRoom);
+        return Responses.normal(res, null, response);
+      } catch (err) {
+        return Responses.unknown(res, err);
+      }
+    }
 }
 
 export default LobbyController;

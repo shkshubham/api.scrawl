@@ -7,5 +7,9 @@ router.get('/create', Auth.UserAccess, RoomController.createRoom);
 router.get('/join/:roomCode', Auth.UserAccess, RoomController.roomJoin);
 router.get('/leave/:roomCode', Auth.UserAccess, RoomController.leaveRoom);
 router.get('/search/:roomCode/', Auth.UserAccess, RoomController.roomDetail);
+router.get('/kick/:roomCode/', Auth.UserAccess, RoomController.kickPlay);
+router.post('/edit/:roomCode/', Auth.UserAccess, RoomController.roomDetail);
 
 export default router;
+
+// TODO: To fix if the user leave the looby

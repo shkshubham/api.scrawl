@@ -126,6 +126,24 @@ class RoomService {
     await room.save();
     return 'Leaved Room';
   }
+
+  static kickPlay = async (userId, room) => {
+    const {isMemeber} = RoomService.findOnRoom(room, userId);
+    if (!isMemeber) {
+      return 'You can not kick play. Who is not in lobby';
+    }
+    const kickedPlay = room.users.splice(0, 1);
+    Socket.emit(room.roomCode, {
+      type: 'ROOM_JOINED_LEAVED',
+      data: room.users,
+    });
+    Socket.emit(room.roomCode, {
+      type: 'KICKED_PLAYER',
+      data: kickedPlay[0].user._id,
+    });
+    await room.save();
+    return 'Play Kicked';
+  }
 }
 
 export default RoomService;
