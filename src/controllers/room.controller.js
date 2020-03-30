@@ -46,7 +46,7 @@ class LobbyController {
       }
     }
 
-    static leaveEditKickRoom = async (req, res, method) => {
+    static leaveKickRoom = async (req, res, method) => {
       const {roomCode} = req.params;
       if (!roomCode) {
         return Responses.error(res, 'Please provide roomCode');
@@ -56,7 +56,7 @@ class LobbyController {
         if (!foundRoom) {
           return Responses.error(res, 'Please provide valid roomCode');
         }
-        const response = await RoomService[method](req.user._id, foundRoom);
+        const response = await RoomService[method](method !== 'kickPlay' ? req.user._id : req.body.userId, foundRoom);
         return Responses.normal(res, null, response);
       } catch (err) {
         return Responses.unknown(res, err);
@@ -64,14 +64,34 @@ class LobbyController {
     }
 
     static leaveRoom = async (req, res) => {
-      return await LobbyController.leaveEditKickRoom(req, res, 'leaveRoom');
+      return await LobbyController.leaveKickRoom(req, res, 'leaveRoom');
     }
     static kickPlay = async (req, res) => {
-      return await LobbyController.leaveEditKickRoom(req, res, 'kickPlay');
+      return await LobbyController.leaveKickRoom(req, res, 'kickPlay');
     }
 
     static editRoom = async (req, res) => {
-      return await LobbyController.leaveEditKickRoom(req, res, 'editRoom');
+      const {roomCode} = req.params;
+      if (!roomCode) {
+        return Responses.error(res, 'Please provide roomCode');
+      }
+      try {
+        const foundRoom = await RoomService.findRoom(roomCode);
+        if (!foundRoom) {
+          return Responses.error(res, 'Please provide valid roomCode');
+        }
+        if (!RoomService.findIsRoomOwner(foundRoom, req.user._id)) {
+          return Responses.error(res, 'You are not owner of lobby. Only owner can edit lobby');
+        }
+        const {key, value} = req.body;
+        RoomService.editRoom(roomCode, {
+          key,
+          value,
+        });
+        return Responses.normal(res, null);
+      } catch (err) {
+        return Responses.unknown(res, err);
+      }
     }
 }
 

@@ -3,6 +3,12 @@ import Utils from '../utils';
 import {drawTime, rounds} from '../data/lobby';
 import Socket from './socket.service';
 class RoomService {
+  static types = {
+    ROOM_JOINED_LEAVED: 'ROOM_JOINED_LEAVED',
+    KICKED_PLAYER: 'KICKED_PLAYER',
+    ROOM_OWNER: 'ROOM_OWNER',
+    ROOM_EDIT: 'ROOM_EDIT',
+  }
   static createRoom = async (req) => {
     const {user} = req;
     const roomCode = Utils.generateRandomString();
@@ -18,10 +24,14 @@ class RoomService {
     return room;
   }
 
+  static findRoom = async (roomCode) => {
+    return await Database.Room.findOne({roomCode});
+  }
+
   static getRoomDetail = async (roomCode) => {
     const userFields = ['name', 'picture', 'email'];
     const categoryFields = ['name', 'language'];
-    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields).populate('category', categoryFields) || null;
+    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields).populate('category', categoryFields);
   }
 
   static findRoomByRoomCode = async (roomCode) => {
@@ -52,7 +62,7 @@ class RoomService {
 
     if (isMemeber) {
       Socket.emit(room.roomCode, {
-        type: 'ROOM_JOINED_LEAVED',
+        type: RoomService.types.ROOM_JOINED_LEAVED,
         data: room.users,
       });
       return {
@@ -67,7 +77,7 @@ class RoomService {
     await room.save();
     const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     Socket.emit(room.roomCode, {
-      type: 'ROOM_JOINED_LEAVED',
+      type: RoomService.types.ROOM_JOINED_LEAVED,
       data: roomAfterUpdate.users,
     });
     return {
@@ -101,11 +111,11 @@ class RoomService {
           };
           RoomService.removeUserFromRoom(room, 0);
           Socket.emit(room.roomCode, {
-            type: 'ROOM_OWNER',
+            type: RoomService.types.ROOM_OWNER,
             data,
           });
           Socket.emit(room.roomCode, {
-            type: 'ROOM_JOINED_LEAVED',
+            type: RoomService.types.ROOM_JOINED_LEAVED,
             data: room.users,
           });
           await room.save();
@@ -120,7 +130,7 @@ class RoomService {
     }
     RoomService.removeUserFromRoom(room, index);
     Socket.emit(room.roomCode, {
-      type: 'ROOM_JOINED_LEAVED',
+      type: RoomService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
     await room.save();
@@ -134,11 +144,11 @@ class RoomService {
     }
     const kickedPlay = RoomService.removeUserFromRoom(room, index);
     Socket.emit(room.roomCode, {
-      type: 'ROOM_JOINED_LEAVED',
+      type: RoomService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
     Socket.emit(room.roomCode, {
-      type: 'KICKED_PLAYER',
+      type: RoomService.types.KICKED_PLAYER,
       data: {
         id: kickedPlay[0].user._id,
       },
@@ -147,8 +157,11 @@ class RoomService {
     return 'Play Kicked';
   }
 
-  static editRoom = async (userId, room) => {
-
+  static editRoom = (roomCode, data) => {
+    Socket.emit(roomCode, {
+      type: RoomService.types.ROOM_EDIT,
+      data,
+    });
   }
 
   static removeUserFromRoom = (room, index) => {
