@@ -143,6 +143,8 @@ class RoomService {
       return 'You can not kick play. Who is not in lobby';
     }
     const kickedPlay = RoomService.removeUserFromRoom(room, index);
+    const kickedPlayId = kickedPlay[0].user._id;
+    room.kickedUsers = room.kickedUsers.concat(kickedPlayId);
     Socket.emit(room.roomCode, {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: room.users,
@@ -150,7 +152,7 @@ class RoomService {
     Socket.emit(room.roomCode, {
       type: RoomService.types.KICKED_PLAYER,
       data: {
-        id: kickedPlay[0].user._id,
+        id: kickedPlayId,
       },
     });
     await room.save();

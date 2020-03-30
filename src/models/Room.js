@@ -28,6 +28,9 @@ const RoomSchema = new Schema({
   },
   owner: RoomUserSchema,
   users: [RoomUserSchema],
+  kickedUsers: [{
+    type: Schema.Types.ObjectId,
+  }],
   __v: {type: Number, select: false},
 }, {timestamps: true});
 

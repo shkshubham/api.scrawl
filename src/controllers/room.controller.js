@@ -36,6 +36,11 @@ class LobbyController {
         if (!foundRoom) {
           return Responses.error(res, 'Please provide valid roomCode');
         }
+
+        if (foundRoom.kickedUsers.includes(req.user._id)) {
+          return Responses.error(res, 'You have been kicked from lobby. Can not join');
+        }
+
         if (RoomService.findIsRoomOwner(foundRoom, req.user._id)) {
           return Responses.normal(res, foundRoom, 'Room Joined');
         }
