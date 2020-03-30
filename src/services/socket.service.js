@@ -11,7 +11,12 @@ class Socket {
           'CONTECTED': client.id,
         });
         this.client = client;
-
+        client.on('ROOM_CLIENT_EDIT', (data) => {
+          Logger.log('table', {
+            'ROOM_CLIENT_EDIT': data,
+          });
+          Socket.emit('ROOM_EDIT', data);
+        });
         client.on('disconnect', () => {
           Logger.log('table', {
             Disconnected: true,
