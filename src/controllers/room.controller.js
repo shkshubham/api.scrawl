@@ -46,7 +46,7 @@ class LobbyController {
       }
     }
 
-    static leaveKickRoom = async (req, res, method) => {
+    static leaveRoom = async (req, res) => {
       const {roomCode} = req.params;
       if (!roomCode) {
         return Responses.error(res, 'Please provide roomCode');
@@ -56,18 +56,30 @@ class LobbyController {
         if (!foundRoom) {
           return Responses.error(res, 'Please provide valid roomCode');
         }
-        const response = await RoomService[method](method !== 'kickPlay' ? req.user._id : req.body.userId, foundRoom);
+        const response = await RoomService.leaveRoom(req.user._id, foundRoom);
         return Responses.normal(res, null, response);
       } catch (err) {
         return Responses.unknown(res, err);
       }
     }
-
-    static leaveRoom = async (req, res) => {
-      return await LobbyController.leaveKickRoom(req, res, 'leaveRoom');
-    }
     static kickPlay = async (req, res) => {
-      return await LobbyController.leaveKickRoom(req, res, 'kickPlay');
+      const {roomCode} = req.params;
+      if (!roomCode) {
+        return Responses.error(res, 'Please provide roomCode');
+      }
+      try {
+        const foundRoom = await RoomService.getRoomDetail(roomCode);
+        if (!foundRoom) {
+          return Responses.error(res, 'Please provide valid roomCode');
+        }
+        if (!RoomService.findIsRoomOwner(foundRoom, req.user._id)) {
+          return Responses.error(res, 'You are not owner of lobby. Only owner can kick player');
+        }
+        const response = await RoomService.kickPlay(req.body.userId, foundRoom);
+        return Responses.normal(res, null, response);
+      } catch (err) {
+        return Responses.unknown(res, err);
+      }
     }
 
     static editRoom = async (req, res) => {
