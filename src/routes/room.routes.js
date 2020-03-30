@@ -8,7 +8,7 @@ router.get('/join/:roomCode', Auth.UserAccess, RoomController.roomJoin);
 router.get('/leave/:roomCode', Auth.UserAccess, RoomController.leaveRoom);
 router.get('/search/:roomCode/', Auth.UserAccess, RoomController.roomDetail);
 router.get('/kick/:roomCode/', Auth.UserAccess, RoomController.kickPlay);
-router.post('/edit/:roomCode/', Auth.UserAccess, RoomController.roomDetail);
+router.post('/edit/:roomCode/', Auth.UserAccess, RoomController.editRoom);
 
 export default router;
 

@@ -99,7 +99,7 @@ class RoomService {
             user: userData.user._id,
             score: userData.user.score,
           };
-          room.users.splice(0, 1);
+          RoomService.removeUserFromRoom(room, 0);
           Socket.emit(room.roomCode, {
             type: 'ROOM_OWNER',
             data,
@@ -118,7 +118,7 @@ class RoomService {
         return 'You can not the member of the room';
       }
     }
-    room.users.splice(index, 1);
+    RoomService.removeUserFromRoom(room, index);
     Socket.emit(room.roomCode, {
       type: 'ROOM_JOINED_LEAVED',
       data: room.users,
@@ -128,11 +128,11 @@ class RoomService {
   }
 
   static kickPlay = async (userId, room) => {
-    const {isMemeber} = RoomService.findOnRoom(room, userId);
+    const {isMemeber, index} = RoomService.findOnRoom(room, userId);
     if (!isMemeber) {
       return 'You can not kick play. Who is not in lobby';
     }
-    const kickedPlay = room.users.splice(0, 1);
+    const kickedPlay = RoomService.removeUserFromRoom(room, index);
     Socket.emit(room.roomCode, {
       type: 'ROOM_JOINED_LEAVED',
       data: room.users,
@@ -145,6 +145,14 @@ class RoomService {
     });
     await room.save();
     return 'Play Kicked';
+  }
+
+  static editRoom = async (userId, room) => {
+
+  }
+
+  static removeUserFromRoom = (room, index) => {
+    return room.users.splice(index, 1);
   }
 }
 

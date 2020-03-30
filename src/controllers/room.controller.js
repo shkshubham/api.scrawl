@@ -46,7 +46,7 @@ class LobbyController {
       }
     }
 
-    static leaveRoom = async (req, res) => {
+    static leaveEditKickRoom = async (req, res, method) => {
       const {roomCode} = req.params;
       if (!roomCode) {
         return Responses.error(res, 'Please provide roomCode');
@@ -56,27 +56,22 @@ class LobbyController {
         if (!foundRoom) {
           return Responses.error(res, 'Please provide valid roomCode');
         }
-        const response = await RoomService.leaveRoom(req.user._id, foundRoom);
+        const response = await RoomService[method](req.user._id, foundRoom);
         return Responses.normal(res, null, response);
       } catch (err) {
         return Responses.unknown(res, err);
       }
     }
+
+    static leaveRoom = async (req, res) => {
+      return await LobbyController.leaveEditKickRoom(req, res, 'leaveRoom');
+    }
     static kickPlay = async (req, res) => {
-      const {roomCode} = req.params;
-      if (!roomCode) {
-        return Responses.error(res, 'Please provide roomCode');
-      }
-      try {
-        const foundRoom = await RoomService.getRoomDetail(roomCode);
-        if (!foundRoom) {
-          return Responses.error(res, 'Please provide valid roomCode');
-        }
-        const response = await RoomService.kickPlay(req.body.userId, foundRoom);
-        return Responses.normal(res, null, response);
-      } catch (err) {
-        return Responses.unknown(res, err);
-      }
+      return await LobbyController.leaveEditKickRoom(req, res, 'kickPlay');
+    }
+
+    static editRoom = async (req, res) => {
+      return await LobbyController.leaveEditKickRoom(req, res, 'editRoom');
     }
 }
 
