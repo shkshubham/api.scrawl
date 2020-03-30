@@ -171,7 +171,7 @@ class RoomService {
       type: RoomService.types.ROOM_EDIT,
       data,
     });
-    const room = await findRoomByRoomCode(roomCode);
+    const room = await RoomService.findRoomByRoomCode(roomCode);
     switch (type) {
       case 'Round':
         room.rounds = data.value;
