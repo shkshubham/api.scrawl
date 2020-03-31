@@ -9,6 +9,7 @@ class RoomService {
     ROOM_OWNER: 'ROOM_OWNER',
     ROOM_EDIT: 'ROOM_EDIT',
     NEW_LOBBY: 'NEW_LOBBY',
+    EDIT_LOBBY: 'EDIT_LOBBY',
     DELETED_LOBBY: 'DELETED_LOBBY',
   }
   static createRoom = async (req) => {
@@ -23,7 +24,7 @@ class RoomService {
         user: user._id,
       },
     });
-    RoomService.onJoinLeaveAndKickRoomSocket(room);
+    RoomService.onCreateLobbySocket(room);
     return room;
   }
 
@@ -73,21 +74,32 @@ class RoomService {
     room.users = room.users.concat({
       user: userId,
     });
+    RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
     await room.save();
     const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
     Socket.emit(room.roomCode, {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: roomAfterUpdate.users,
     });
-    RoomService.onJoinLeaveAndKickRoomSocket(room);
     return {
       room: roomAfterUpdate,
       message: 'Room Joined',
     };
   }
 
-  static onJoinLeaveAndKickRoomSocket = async (room) => {
-    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(room.roomCode));
+  static onCreateLobbySocket = async (room) => {
+    const filteredRoom = await RoomService.getPublicRoomDetail(room.roomCode);
+    RoomService.sendNewRoomSocket(room.privacy, filteredRoom);
+  }
+
+  static onEditLobbySocket = async (roomCode, key, value) => {
+    Socket.emit(RoomService.types.ROOM_EDIT, {
+      roomCode,
+      data: {
+        key,
+        value,
+      },
+    });
   }
 
   static findIsRoomOwner = (room, userId) => {
@@ -122,8 +134,8 @@ class RoomService {
             type: RoomService.types.ROOM_JOINED_LEAVED,
             data: room.users,
           });
+          RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
           await room.save();
-          RoomService.onJoinLeaveAndKickRoomSocket(room);
           return 'Leaved Room';
         } else {
           Socket.emit(RoomService.types.DELETED_LOBBY, {
@@ -141,8 +153,8 @@ class RoomService {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
+    RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
     await room.save();
-    RoomService.onJoinLeaveAndKickRoomSocket(room);
     return 'Leaved Room';
   }
 
@@ -164,7 +176,7 @@ class RoomService {
         id: kickedPlayId,
       },
     });
-    RoomService.onJoinLeaveAndKickRoomSocket(room);
+    RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
     await room.save();
     return 'Play Kicked';
   }
@@ -190,15 +202,18 @@ class RoomService {
     switch (key) {
       case 'Round':
         room.rounds = value;
+        RoomService.onEditLobbySocket(room.roomCode, 'rounds', value);
         break;
       case 'Draw Time':
         room.drawTime = value;
+        RoomService.onEditLobbySocket(room.roomCode, 'drawTime', value);
         break;
       case 'Sub_Category':
         // room.category = data.value;
         break;
       case 'Privacy':
         room.privacy = value;
+        RoomService.onEditLobbySocket(room.roomCode, 'privacy', value);
         break;
     }
     await room.save();
