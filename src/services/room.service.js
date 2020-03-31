@@ -126,11 +126,8 @@ class RoomService {
           RoomService.onJoinLeaveAndKickRoomSocket(room);
           return 'Leaved Room';
         } else {
-          Socket.emit(room.roomCode, {
-            type: RoomService.types.DELETED_LOBBY,
-            data: {
-              roomCode: room.roomCode,
-            },
+          Socket.emit(RoomService.types.DELETED_LOBBY, {
+            roomCode: room.roomCode,
           });
           await room.delete();
           return 'Room Deleted';
