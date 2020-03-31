@@ -8,6 +8,7 @@ class RoomService {
     KICKED_PLAYER: 'KICKED_PLAYER',
     ROOM_OWNER: 'ROOM_OWNER',
     ROOM_EDIT: 'ROOM_EDIT',
+    NEW_LOBBY: 'NEW_LOBBY',
   }
   static createRoom = async (req) => {
     const {user} = req;
@@ -21,6 +22,7 @@ class RoomService {
         user: user._id,
       },
     });
+    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(roomCode));
     return room;
   }
 
@@ -38,7 +40,7 @@ class RoomService {
 
   static findOnRoom = (room, userId) => {
     const payload = {
-      isMemeber: false,
+      isMember: false,
       index: -1,
     };
     if (!room.users.length) {
@@ -46,7 +48,7 @@ class RoomService {
     }
     const foundIndex = room.users.findIndex((userData) => userData.user._id.toString() === userId);
     if (foundIndex > -1) {
-      payload.isMemeber = true;
+      payload.isMember = true;
       payload.index = foundIndex;
       return payload;
     }
@@ -54,9 +56,9 @@ class RoomService {
   }
 
   static roomJoin = async (userId, room) => {
-    const {isMemeber} = RoomService.findOnRoom(room, userId);
+    const {isMember} = RoomService.findOnRoom(room, userId);
 
-    if (isMemeber) {
+    if (isMember) {
       Socket.emit(room.roomCode, {
         type: RoomService.types.ROOM_JOINED_LEAVED,
         data: room.users,
@@ -87,8 +89,8 @@ class RoomService {
   }
 
   static leaveRoom = async (userId, room) => {
-    const {isMemeber, index} = RoomService.findOnRoom(room, userId);
-    if (!isMemeber) {
+    const {isMember, index} = RoomService.findOnRoom(room, userId);
+    if (!isMember) {
       const isOwner = RoomService.findIsRoomOwner(room, userId);
       if (isOwner) {
         if (room.users.length) {
@@ -134,8 +136,8 @@ class RoomService {
   }
 
   static kickPlay = async (userId, room) => {
-    const {isMemeber, index} = RoomService.findOnRoom(room, userId);
-    if (!isMemeber) {
+    const {isMember, index} = RoomService.findOnRoom(room, userId);
+    if (!isMember) {
       return 'You can not kick play. Who is not in lobby';
     }
     const kickedPlay = RoomService.removeUserFromRoom(room, index);
@@ -172,7 +174,7 @@ class RoomService {
       data,
     });
     const {key, value} = data;
-    const room = await RoomService.findRoomByRoomCode(roomCode);
+    const room = await RoomService.getPublicRoomDetail(roomCode);
     switch (key) {
       case 'Round':
         room.rounds = value;
@@ -188,12 +190,36 @@ class RoomService {
         break;
     }
     await room.save();
+    RoomService.sendNewRoomSocket(room.privacy, room);
+  }
+
+  static sendNewRoomSocket = (privacy, room) => {
+    if (privacy === 'PUBLIC') {
+      Socket.emit(RoomService.types.NEW_LOBBY, RoomService.filterRoom(room));
+    }
+  }
+
+  static getPublicRoomDetail = async (roomCode) => {
+    const room = await Database.Room.findOne({
+      roomCode,
+    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']);
+    delete room.kickedUsers;
+    room.users = room.users.length;
+    return room;
+  }
+
+  static filterRoom = (roomData) => {
+    const room = JSON.parse(JSON.stringify(roomData));
+    delete room.kickedUsers;
+    room.users = room.users.length;
+    return room;
   }
 
   static getAllPublicRooms = async () => {
-    const allPublicRooms = await Database.Room.find({
+    const allRooms = await Database.Room.find({
       privacy: 'PUBLIC',
-    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']).lean();
+    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']);
+    const allPublicRooms = JSON.parse(JSON.stringify(allRooms));
     for (const room of allPublicRooms) {
       delete room.kickedUsers;
       room.users = room.users.length;
