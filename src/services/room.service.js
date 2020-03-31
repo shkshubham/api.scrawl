@@ -183,6 +183,9 @@ class RoomService {
       case 'Sub_Category':
         // room.category = data.value;
         break;
+      case 'Privacy':
+        room.privacy = value;
+        break;
     }
     await room.save();
   }
