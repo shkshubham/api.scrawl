@@ -217,7 +217,6 @@ class RoomService {
         break;
     }
     await room.save();
-    RoomService.sendNewRoomSocket(room.privacy, room);
   }
 
   static sendNewRoomSocket = (privacy, room) => {
