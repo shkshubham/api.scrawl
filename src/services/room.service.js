@@ -78,7 +78,7 @@ class RoomService {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: roomAfterUpdate.users,
     });
-    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(roomCode));
+    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(room.roomCode));
     return {
       room: roomAfterUpdate,
       message: 'Room Joined',
