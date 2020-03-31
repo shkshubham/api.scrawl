@@ -9,6 +9,7 @@ class RoomService {
     ROOM_OWNER: 'ROOM_OWNER',
     ROOM_EDIT: 'ROOM_EDIT',
     NEW_LOBBY: 'NEW_LOBBY',
+    DELETED_LOBBY: 'DELETED_LOBBY',
   }
   static createRoom = async (req) => {
     const {user} = req;
@@ -125,6 +126,12 @@ class RoomService {
           RoomService.onJoinLeaveAndKickRoomSocket(room);
           return 'Leaved Room';
         } else {
+          Socket.emit(room.roomCode, {
+            type: RoomService.types.DELETED_LOBBY,
+            data: {
+              roomCode: room.roomCode,
+            },
+          });
           await room.delete();
           return 'Room Deleted';
         }
