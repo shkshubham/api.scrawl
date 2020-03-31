@@ -121,11 +121,10 @@ class RoomService {
             type: RoomService.types.ROOM_JOINED_LEAVED,
             data: room.users,
           });
-          RoomService.onJoinLeaveAndKickRoomSocket(room);
           await room.save();
+          RoomService.onJoinLeaveAndKickRoomSocket(room);
           return 'Leaved Room';
         } else {
-          RoomService.onJoinLeaveAndKickRoomSocket(room);
           await room.delete();
           return 'Room Deleted';
         }
@@ -138,8 +137,8 @@ class RoomService {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
-    RoomService.onJoinLeaveAndKickRoomSocket(room);
     await room.save();
+    RoomService.onJoinLeaveAndKickRoomSocket(room);
     return 'Leaved Room';
   }
 
