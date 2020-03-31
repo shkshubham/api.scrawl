@@ -223,7 +223,7 @@ class RoomService {
   static getAllPublicRooms = async () => {
     const allRooms = await Database.Room.find({
       privacy: 'PUBLIC',
-    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']);
+    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']).sort('-updatedAt');
     const allPublicRooms = JSON.parse(JSON.stringify(allRooms));
     for (const room of allPublicRooms) {
       RoomService.setRoomProperties(room);
