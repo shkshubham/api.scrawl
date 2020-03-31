@@ -9,7 +9,7 @@ class RoomService {
     ROOM_OWNER: 'ROOM_OWNER',
     ROOM_EDIT: 'ROOM_EDIT',
     NEW_LOBBY: 'NEW_LOBBY',
-    EDIT_LOBBY: 'EDIT_LOBBY',
+    EDIT_LOBBY_FOR_HOME: 'EDIT_LOBBY',
     DELETED_LOBBY: 'DELETED_LOBBY',
   }
   static createRoom = async (req) => {
@@ -93,7 +93,7 @@ class RoomService {
   }
 
   static onEditLobbySocket = async (roomCode, key, value) => {
-    Socket.emit(RoomService.types.ROOM_EDIT, {
+    Socket.emit(RoomService.types.EDIT_LOBBY_FOR_HOME, {
       roomCode,
       data: {
         key,
