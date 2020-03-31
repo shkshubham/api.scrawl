@@ -201,12 +201,9 @@ class RoomService {
   }
 
   static getPublicRoomDetail = async (roomCode) => {
-    const room = await Database.Room.findOne({
+    return await Database.Room.findOne({
       roomCode,
     }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']);
-    delete room.kickedUsers;
-    room.users = room.users.length;
-    return room;
   }
 
   static filterRoom = (roomData) => {
