@@ -210,9 +210,14 @@ class RoomService {
 
   static filterRoom = (roomData) => {
     const room = JSON.parse(JSON.stringify(roomData));
-    delete room.kickedUsers;
-    room.users = room.users.length;
+    RoomService.setRoomProperties(room);
     return room;
+  }
+
+  static setRoomProperties = (room) => {
+    delete room.kickedUsers;
+    room.owner.user.name = room.owner.user.name.split(' ')[0];
+    room.users = room.users.length;
   }
 
   static getAllPublicRooms = async () => {
@@ -221,8 +226,7 @@ class RoomService {
     }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']);
     const allPublicRooms = JSON.parse(JSON.stringify(allRooms));
     for (const room of allPublicRooms) {
-      delete room.kickedUsers;
-      room.users = room.users.length;
+      RoomService.setRoomProperties(room);
     }
     return allPublicRooms;
   }
