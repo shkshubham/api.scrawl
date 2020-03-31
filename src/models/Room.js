@@ -31,6 +31,14 @@ const RoomSchema = new Schema({
   kickedUsers: [{
     type: Schema.Types.ObjectId,
   }],
+  privacy: {
+    type: String,
+    default: 'PUBLIC',
+  },
+  gameStarted: {
+    type: Boolean,
+    default: false,
+  },
   __v: {type: Number, select: false},
 }, {timestamps: true});
 

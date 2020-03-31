@@ -186,6 +186,17 @@ class RoomService {
     }
     await room.save();
   }
+
+  static getAllPublicRooms = async () => {
+    const allPublicRooms = await Database.Room.find({
+      privacy: 'PUBLIC',
+    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']).lean();
+    for (const room of allPublicRooms) {
+      delete room.kickedUsers;
+      room.users = room.users.length;
+    }
+    return allPublicRooms;
+  }
 }
 
 export default RoomService;

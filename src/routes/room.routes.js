@@ -9,6 +9,7 @@ router.get('/leave/:roomCode', Auth.UserAccess, RoomController.leaveRoom);
 router.get('/search/:roomCode/', Auth.UserAccess, RoomController.roomDetail);
 router.post('/kick/:roomCode/', Auth.UserAccess, RoomController.kickPlay);
 router.post('/edit/:roomCode/', Auth.UserAccess, RoomController.editRoom);
+router.get('/public', Auth.AllAccess, RoomController.listAllPublic);
 
 export default router;
 
