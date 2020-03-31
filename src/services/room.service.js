@@ -22,7 +22,7 @@ class RoomService {
         user: user._id,
       },
     });
-    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(roomCode));
+    RoomService.onJoinLeaveAndKickRoomSocket(room);
     return room;
   }
 
@@ -78,11 +78,15 @@ class RoomService {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: roomAfterUpdate.users,
     });
-    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(room.roomCode));
+    RoomService.onJoinLeaveAndKickRoomSocket(room);
     return {
       room: roomAfterUpdate,
       message: 'Room Joined',
     };
+  }
+
+  static onJoinLeaveAndKickRoomSocket = async (room) => {
+    RoomService.sendNewRoomSocket(room.privacy, await RoomService.getPublicRoomDetail(room.roomCode));
   }
 
   static findIsRoomOwner = (room, userId) => {
@@ -117,9 +121,11 @@ class RoomService {
             type: RoomService.types.ROOM_JOINED_LEAVED,
             data: room.users,
           });
+          RoomService.onJoinLeaveAndKickRoomSocket(room);
           await room.save();
           return 'Leaved Room';
         } else {
+          RoomService.onJoinLeaveAndKickRoomSocket(room);
           await room.delete();
           return 'Room Deleted';
         }
@@ -132,6 +138,7 @@ class RoomService {
       type: RoomService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
+    RoomService.onJoinLeaveAndKickRoomSocket(room);
     await room.save();
     return 'Leaved Room';
   }
@@ -154,6 +161,7 @@ class RoomService {
         id: kickedPlayId,
       },
     });
+    RoomService.onJoinLeaveAndKickRoomSocket(room);
     await room.save();
     return 'Play Kicked';
   }
