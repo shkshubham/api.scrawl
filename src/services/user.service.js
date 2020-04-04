@@ -102,6 +102,12 @@ class UserService {
   static async allLookingUsers() {
     return await Database.User.find({looking: true}).select(['name', 'picture']).lean();
   }
+
+  static async inviteUser(userId, room) {
+    room.users = room.users.length;
+    delete room.kickedUsers;
+    Socket.emit(userId, room);
+  }
 }
 
 export default UserService;

@@ -1,7 +1,7 @@
 import Responses from '../utils/responses';
 import UserService from '../services/user.service';
 import Utils from '../utils';
-
+import RoomService from '../services/room.service';
 class UserController {
   static auth = async (req, res) => {
     try {
@@ -69,12 +69,27 @@ class UserController {
       return Responses.unknown(res, err);
     }
   }
+
+  static invite = async (req, res) => {
+    try {
+      const {userId, roomCode} = req.body;
+      if (userId === req.user._id) {
+        return Responses.error(res, 'You can not invite yourself');
+      }
+      const user = await UserService.getUserDetailById(userId);
+      if (!user) {
+        return Responses.error(res, 'Invalid user');
+      }
+      const room = await RoomService.getRoomWithOwnerDetail(roomCode);
+      if (!room) {
+        return Responses.error(res, 'Please provide valid room code');
+      }
+      await UserService.inviteUser(userId, room);
+      return Responses.normal(res, 'Invitation Sent');
+    } catch (err) {
+      return Responses.unknown(res, err);
+    }
+  }
 }
 
-
 export default UserController;
-
-// Socket for user looking for game
-// Deleting inactive lobbies aka rooms
-
-// Then drawing

@@ -16,7 +16,7 @@ class Responses {
     };
   }
 
-  static unknown(res, err, message='Internal Server Error Occured', status=500) {
+  static unknown(res, err, message='Internal Server Error Occurred', status=500) {
     Logger.log('log', err);
     return res.status(status).send(
         this.response(message, null)

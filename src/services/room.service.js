@@ -40,6 +40,11 @@ class RoomService {
     });
   }
 
+  static getRoomWithOwnerDetail = async (roomCode) => {
+    const userFields = ['name', 'picture'];
+    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).lean();
+  }
+
   static findOnRoom = (room, userId) => {
     const payload = {
       isMember: false,
