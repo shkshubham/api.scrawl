@@ -5,9 +5,19 @@ import Responses from '../utils/responses';
 import Logger from '../utils/logger';
 
 class Auth {
+  static setUserDetailAndToken(req, user, token) {
+    const userData = JSON.parse(JSON.stringify(user));
+    delete userData.password;
+    delete userData.tokens;
+    delete userData.__v;
+    req.user = userData;
+    req.token = token;
+  }
+
   static logReqBody(body) {
     Logger.log('log', body);
   }
+
   static async getUserTokenAndData(req) {
     const authHeader = req.header('Authorization');
     if (!authHeader) {
@@ -31,19 +41,19 @@ class Auth {
       if (!user) {
         return res.status(401).send(Responses.response('Please Log In'));
       }
-      const userData = JSON.parse(JSON.stringify(user));
-      delete userData.password;
-      delete userData.tokens;
-      delete userData.__v;
-      req.user = userData;
-      req.token = token;
+      Auth.setUserDetailAndToken(req, user, token);
       return next();
     } catch (error) {
       res.status(401).send({error: 'Not authorized to access this resource'});
     }
   }
 
-  static AllAccess(_, __, next) {
+  static async AllAccess(_, __, next) {
+    Auth.logReqBody(req.body);
+    const {user, token} = await Auth.getUserTokenAndData(req);
+    if (user) {
+      Auth.setUserDetailAndToken(req, user, token);
+    }
     return next();
   }
 
