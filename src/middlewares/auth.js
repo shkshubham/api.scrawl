@@ -48,7 +48,7 @@ class Auth {
     }
   }
 
-  static async AllAccess(_, __, next) {
+  static async AllAccess(req, __, next) {
     Auth.logReqBody(req.body);
     const {user, token} = await Auth.getUserTokenAndData(req);
     if (user) {
