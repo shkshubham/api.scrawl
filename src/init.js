@@ -2,6 +2,10 @@ import Socket from './services/socket.service';
 import Database from './database';
 import Routes from './routes/app';
 import {category, rounds, drawTime} from './data/lobby';
+import {countries} from './data/countries';
+import path from 'path';
+import fs from 'fs';
+import Logger from './utils/logger';
 
 class Init {
   static socket(server) {
@@ -20,6 +24,7 @@ class Init {
     this.socket(server);
     this.routes();
     this.data();
+    this.initCountries();
   }
 
   static async data() {
@@ -36,6 +41,37 @@ class Init {
         drawTime,
       });
     }
+  }
+  static async initCountries() {
+    const countriesFound = await Database.Country.find().lean();
+    Logger.log('table', {
+      countries: countriesFound.length,
+    });
+    if (countriesFound.length) {
+      return true;
+    }
+    countries.forEach(async (country) => {
+      Init.inertFlagToDB(country);
+    });
+  }
+
+  static inertFlagToDB(country) {
+    const flagPath = path.join(__dirname, '..', 'assets', 'flags', `${country}.svg`);
+    fs.readFile(flagPath, 'utf8', async (err, data) => {
+      if ( err ) {
+        Logger.log('error', {
+          msg: 'Insert Error Error',
+          data: country,
+        });
+      } else {
+        const svg = data.toString();
+        await Database.Country.create({
+          name: country,
+          svg,
+        });
+        Logger.log('log', 'done');
+      }
+    });
   }
 }
 

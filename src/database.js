@@ -5,6 +5,7 @@ import UserModelSchema from './models/User';
 import LobbySchema from './models/Lobby';
 import CategorySchema from './models/Category';
 import RoomSchema from './models/Room';
+import CountrySchema from './models/Country';
 
 class Database {
     static User;
@@ -12,12 +13,14 @@ class Database {
     static Category;
     static mongoose;
     static Room;
+    static Country;
 
     static initModel() {
       this.User = Database.mongoose.model('User', UserModelSchema);
       this.Lobby = Database.mongoose.model('Lobby', LobbySchema);
       this.Category = Database.mongoose.model('Category', CategorySchema);
       this.Room = Database.mongoose.model('Room', RoomSchema);
+      this.Country = Database.mongoose.model('CountrySchema', CountrySchema);
     }
 
     static init() {
