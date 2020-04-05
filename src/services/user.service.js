@@ -18,6 +18,7 @@ class UserService {
           name,
           googleId: sub,
           password: sub,
+          country: '5e8a49508dd36b1eb4f2fe81',
         });
         user = createdUser;
       }
