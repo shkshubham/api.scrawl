@@ -100,7 +100,7 @@ class UserService {
   }
 
   static async allLookingUsers() {
-    return await Database.User.find({looking: true}).select(['name', 'picture']).lean();
+    return await Database.User.find({looking: true}).populate('country').select(['name', 'picture']).lean();
   }
 
   static async inviteUser(userId, room) {

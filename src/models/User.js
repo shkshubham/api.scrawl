@@ -48,6 +48,11 @@ const UserModelSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  country: {
+    type: Schema.Types.ObjectId,
+    default: null,
+    ref: 'Country',
+  },
   __v: {type: Number, select: false},
 }, {timestamps: true});
 

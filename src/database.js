@@ -20,7 +20,7 @@ class Database {
       this.Lobby = Database.mongoose.model('Lobby', LobbySchema);
       this.Category = Database.mongoose.model('Category', CategorySchema);
       this.Room = Database.mongoose.model('Room', RoomSchema);
-      this.Country = Database.mongoose.model('CountrySchema', CountrySchema);
+      this.Country = Database.mongoose.model('Country', CountrySchema);
     }
 
     static init() {

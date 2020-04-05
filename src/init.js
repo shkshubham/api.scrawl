@@ -47,6 +47,13 @@ class Init {
     Logger.log('table', {
       countries: countriesFound.length,
     });
+    // const indiaFlagId = '5e8a49508dd36b1eb4f2fe81';
+    // const users = await Database.User.find();
+    // for (const user of users) {
+    //   await user.update({
+    //     country: indiaFlagId,
+    //   });
+    // }
     if (countriesFound.length) {
       return true;
     }
