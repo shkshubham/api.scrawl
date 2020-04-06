@@ -61,7 +61,7 @@ class UserService {
   static async lookingForGame(req) {
     const user = await Database.User.findById({
       _id: req.user._id,
-    }).select(['name', 'picture', 'looking']);
+    }).populate('country').select(['name', 'picture', 'looking']);
     if (user.looking && req.params.type === 'enable') {
       return {
         isValid: false,
