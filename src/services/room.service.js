@@ -218,7 +218,13 @@ class RoomService {
         break;
       case 'Privacy':
         room.privacy = value;
-        RoomService.onEditLobbySocket(room.roomCode, 'privacy', value);
+        if (value === 'PUBLIC') {
+          RoomService.onEditLobbySocket(room.roomCode, 'privacy', value);
+        } else {
+          Socket.emit(RoomService.types.DELETED_LOBBY, {
+            roomCode: room.roomCode,
+          });
+        }
         break;
     }
     await room.save();
