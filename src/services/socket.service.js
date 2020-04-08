@@ -23,9 +23,13 @@ class Socket {
             Disconnected: true,
           });
         });
-        client.on('DRAW', (data) => {
+        client.on('CLIENT_DRAWING_TOUCH', (data) => {
           Logger.log('log', data);
-          this.io.emit('DRAWING', data);
+          this.io.emit('SERVER_DRAWING_TOUCH', data);
+        });
+        client.on('CLIENT_DRAWING_RELEASE', (data) => {
+          Logger.log('log', data);
+          this.io.emit('SERVER_DRAWING_RELEASE', data);
         });
       });
     }
