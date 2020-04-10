@@ -1,7 +1,9 @@
 import {config} from 'dotenv';
+import Logger from '../utils/logger';
 
 config();
 
+Logger.log('log', process.env);
 class Config {
     static SERVER_PORT = process.env.PORT;
     static SOCKET_PORT = process.env.SOCKET_PORT;
