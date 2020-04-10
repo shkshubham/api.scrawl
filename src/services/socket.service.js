@@ -1,6 +1,7 @@
 import socket from 'socket.io';
 import Logger from '../utils/logger';
 import RoomService from './room.service';
+import Queue from '../utils/queue';
 
 class Socket {
     static io;
@@ -25,7 +26,7 @@ class Socket {
         });
         client.on('CLIENT_DRAWING_TOUCH', (data) => {
           Logger.log('log', data);
-          this.io.emit('SERVER_DRAWING_TOUCH', data);
+          Queue.drawingQueue.add(data);
         });
         client.on('CLIENT_DRAWING_RELEASE', (data) => {
           Logger.log('log', data);
