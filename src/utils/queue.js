@@ -6,11 +6,8 @@ const Redis = {redis: {port: Config.REDIS.PORT, host: Config.REDIS.HOST, passwor
 class Queue {
     static drawingQueue = new Bull('DRAWING', Redis)
     static processDrawingQueue({data}, done) {
-      setTimeout(() => {
-        Socket.io.emit('SERVER_DRAWING_TOUCH', data);
-        Logger.log('log', data);
-        done();
-      }, 500);
+      Socket.io.emit('SERVER_DRAWING_TOUCH', data);
+      Logger.log('log', data);
     }
 }
 
