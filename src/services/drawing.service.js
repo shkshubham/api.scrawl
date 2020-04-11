@@ -1,5 +1,5 @@
 import Socket from './socket.service';
-const word = 'CYCLE';
+const word = 'cycle';
 
 class Drawing {
   static processComments(roomCode, data) {
