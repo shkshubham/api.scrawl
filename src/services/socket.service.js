@@ -1,6 +1,7 @@
 import socket from 'socket.io';
 import Logger from '../utils/logger';
 import RoomService from './room.service';
+import Drawing from './drawing.service';
 
 class Socket {
     static io;
@@ -30,6 +31,9 @@ class Socket {
         client.on('CLIENT_DRAWING_RELEASE', (data) => {
           Logger.log('log', data);
           this.io.emit('SERVER_DRAWING_RELEASE', data);
+        });
+        client.on('CLIENT_COMMENTS', ({roomCode, data}) => {
+          Drawing.processComments(roomCode, data);
         });
       });
     }
