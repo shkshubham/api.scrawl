@@ -6,6 +6,7 @@ class Drawing {
     LOBBY_CHAT: 'LOBBY_CHAT',
     LOBBY_PLAYER_GUESSED_WORD: 'LOBBY_PLAYER_GUESSED_WORD',
   }
+
   static processComments(roomCode, data) {
     Drawing.checkAndSetWord(roomCode, data);
     Socket.emit(roomCode, {

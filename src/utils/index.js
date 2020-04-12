@@ -17,6 +17,10 @@ class Utils {
     }
     return retVal;
   }
+
+  static generateRandomNumber(length) {
+    return Math.floor(Math.random() * length);
+  }
 }
 
 export default Utils;
