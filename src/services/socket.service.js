@@ -1,7 +1,7 @@
 import socket from 'socket.io';
 import Logger from '../utils/logger';
 import RoomService from './room.service';
-import Drawing from './drawing.service';
+import EventHandler from '../utils/EventHandler';
 
 class Socket {
     static io;
@@ -32,9 +32,16 @@ class Socket {
           Logger.log('log', data);
           this.io.emit('SERVER_DRAWING_RELEASE', data);
         });
-        client.on('CLIENT_COMMENTS', ({roomCode, data}) => {
-          Drawing.processComments(roomCode, data);
+        client.on('CLIENT_CHAT', ({roomCode, data}) => {
+          EventHandler.eventEmitter.emit(roomCode, {
+            type: 'CLIENT_CHAT',
+            data,
+          });
+          // Drawing.processComments(roomCode, data);
         });
+        // client.on('TIMER', ({roomCode, time})=> {
+        //   EventHandler.eventEmitter.emit(roomCode, time);
+        // });
       });
     }
 

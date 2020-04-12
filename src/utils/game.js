@@ -6,6 +6,10 @@ import EventHandler from './EventHandler';
 
 class Game {
   constructor(room) {
+    this.types = {
+      LOBBY_CHAT: 'LOBBY_CHAT',
+      LOBBY_PLAYER_GUESSED_WORD: 'LOBBY_PLAYER_GUESSED_WORD',
+    };
     const {rounds, drawTime, users, category, roomCode, owner} = room;
     this.roomCode = roomCode;
     this.playerGuessed = {};
@@ -20,6 +24,13 @@ class Game {
     this.categoryId = category._id;
     this.currentDrawingPlayerId = '';
     this.currentSelectedWord = '';
+    EventHandler.eventEmitter.on(this.roomCode, ({type, data}) => {
+      switch (type) {
+        case 'CLIENT_CHAT':
+          this.processComments(this.roomCode, data);
+          break;
+      }
+    });
   }
 
   async getWords() {
@@ -64,8 +75,7 @@ class Game {
   }
 
   wordSelectCallback(data) {
-    console.log(`SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, data);
-    this.currentSelectedWord = data;
+    this.currentSelectedWord = data.toLowerCase();
     let word = '';
     // eslint-disable-next-line no-unused-vars
     for (const wordAlpha of this.currentSelectedWord.split('')) {
@@ -75,6 +85,7 @@ class Game {
         word+='_';
       }
     }
+    console.log('-------------------------', data, this.currentSelectedWord);
     Socket.emit(this.roomCode, {
       type: 'LOBBY_WORD',
       data: word,
@@ -92,7 +103,7 @@ class Game {
       if (selectingUser.length) {
         const {score, user} = selectingUser[0];
         const {_id, name, picture} = user;
-        this.currentDrawingPlayerId= _id;
+        this.currentDrawingPlayerId = _id;
 
         Socket.emit(`CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, this.wordSelectionList);
         Socket.emit(this.roomCode, {
@@ -106,7 +117,9 @@ class Game {
         });
         Logger.log('table', user);
         Logger.log('table', this.wordSelectionList);
-        EventHandler.eventEmitter.on(`SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, this.wordSelectCallback);
+        console.log(`SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`);
+
+        EventHandler.eventEmitter.on(`SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, (data) => this.wordSelectCallback(data));
       }
     } catch (err) {
       Logger.log('log', err);
@@ -130,6 +143,33 @@ class Game {
   async startGame() {
     await this.getWords();
     this.startRounds();
+  }
+
+  processComments(roomCode, data) {
+    this.checkAndSetWord(roomCode, data);
+    Socket.emit(roomCode, {
+      type: this.types.LOBBY_CHAT,
+      data,
+    });
+  }
+
+  checkAndSetWord(roomCode, data) {
+    const {message} = data;
+    if (message.length) {
+      const found = message.find((word) => word.toLowerCase() === this.currentSelectedWord);
+      console.log('Found Word: ', found, this.currentSelectedWord);
+      if (found) {
+        Socket.emit(roomCode, {
+          type: this.types.LOBBY_PLAYER_GUESSED_WORD,
+          data: data.user.userId,
+        });
+        data.message = 'Guessed the word';
+      } else {
+        data.message = message[0];
+      }
+    } else {
+      data.message = '';
+    }
   }
 }
 
