@@ -1,6 +1,7 @@
 import Routes from './app';
 import LobbyController from '../controllers/lobby.controller';
 import RoomController from '../controllers/room.controller';
+import Auth from '../middlewares/auth';
 
 const router = Routes.Router();
 router.get('/create', Auth.UserAccess, RoomController.createRoom);
