@@ -25,7 +25,7 @@ class LobbyService {
         user: user._id,
       },
     });
-    RoomService.onCreateLobbySocket(room);
+    LobbyService.onCreateLobbySocket(room);
     return room;
   }
 
@@ -64,11 +64,11 @@ class LobbyService {
   }
 
   static roomJoin = async (userId, room) => {
-    const {isMember} = RoomService.findOnRoom(room, userId);
+    const {isMember} = LobbyService.findOnRoom(room, userId);
 
     if (isMember) {
       Socket.emit(room.roomCode, {
-        type: RoomService.types.ROOM_JOINED_LEAVED,
+        type: LobbyService.types.ROOM_JOINED_LEAVED,
         data: room.users,
       });
       return {
@@ -80,11 +80,11 @@ class LobbyService {
     room.users = room.users.concat({
       user: userId,
     });
-    RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
+    LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
     await room.save();
-    const roomAfterUpdate = await RoomService.getRoomDetail(room.roomCode);
+    const roomAfterUpdate = await LobbyService.getRoomDetail(room.roomCode);
     Socket.emit(room.roomCode, {
-      type: RoomService.types.ROOM_JOINED_LEAVED,
+      type: LobbyService.types.ROOM_JOINED_LEAVED,
       data: roomAfterUpdate.users,
     });
     return {
@@ -94,12 +94,12 @@ class LobbyService {
   }
 
   static onCreateLobbySocket = async (room) => {
-    const filteredRoom = await RoomService.getPublicRoomDetail(room.roomCode);
-    RoomService.sendNewRoomSocket(room.privacy, filteredRoom);
+    const filteredRoom = await LobbyService.getPublicRoomDetail(room.roomCode);
+    LobbyService.sendNewRoomSocket(room.privacy, filteredRoom);
   }
 
   static onEditLobbySocket = async (roomCode, key, value) => {
-    Socket.emit(RoomService.types.EDIT_LOBBY_FOR_HOME, {
+    Socket.emit(LobbyService.types.EDIT_LOBBY_FOR_HOME, {
       roomCode,
       data: {
         key,
@@ -113,9 +113,9 @@ class LobbyService {
   }
 
   static leaveRoom = async (userId, room) => {
-    const {isMember, index} = RoomService.findOnRoom(room, userId);
+    const {isMember, index} = LobbyService.findOnRoom(room, userId);
     if (!isMember) {
-      const isOwner = RoomService.findIsRoomOwner(room, userId);
+      const isOwner = LobbyService.findIsRoomOwner(room, userId);
       if (isOwner) {
         if (room.users.length) {
           const userData = JSON.parse(JSON.stringify(room.users[0]));
@@ -131,20 +131,20 @@ class LobbyService {
             user: userData.user._id,
             score: userData.user.score,
           };
-          RoomService.removeUserFromRoom(room, 0);
+          LobbyService.removeUserFromRoom(room, 0);
           Socket.emit(room.roomCode, {
-            type: RoomService.types.ROOM_OWNER,
+            type: LobbyService.types.ROOM_OWNER,
             data,
           });
           Socket.emit(room.roomCode, {
-            type: RoomService.types.ROOM_JOINED_LEAVED,
+            type: LobbyService.types.ROOM_JOINED_LEAVED,
             data: room.users,
           });
-          RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
+          LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
           await room.save();
           return 'Leaved Room';
         } else {
-          Socket.emit(RoomService.types.DELETED_LOBBY, {
+          Socket.emit(LobbyService.types.DELETED_LOBBY, {
             roomCode: room.roomCode,
           });
           await room.delete();
@@ -154,42 +154,42 @@ class LobbyService {
         return 'You can not the member of the room';
       }
     }
-    RoomService.removeUserFromRoom(room, index);
+    LobbyService.removeUserFromRoom(room, index);
     Socket.emit(room.roomCode, {
-      type: RoomService.types.ROOM_JOINED_LEAVED,
+      type: LobbyService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
-    RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
+    LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
     await room.save();
     return 'Leaved Room';
   }
 
   static kickPlay = async (userId, room) => {
-    const {isMember, index} = RoomService.findOnRoom(room, userId);
+    const {isMember, index} = LobbyService.findOnRoom(room, userId);
     if (!isMember) {
       return 'You can not kick play. Who is not in lobby';
     }
-    const kickedPlay = RoomService.removeUserFromRoom(room, index);
+    const kickedPlay = LobbyService.removeUserFromRoom(room, index);
     const kickedPlayId = kickedPlay[0].user._id;
     room.kickedUsers = room.kickedUsers.concat(kickedPlayId);
     Socket.emit(room.roomCode, {
-      type: RoomService.types.ROOM_JOINED_LEAVED,
+      type: LobbyService.types.ROOM_JOINED_LEAVED,
       data: room.users,
     });
     Socket.emit(room.roomCode, {
-      type: RoomService.types.KICKED_PLAYER,
+      type: LobbyService.types.KICKED_PLAYER,
       data: {
         id: kickedPlayId,
       },
     });
-    RoomService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
+    LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
     await room.save();
     return 'Play Kicked';
   }
 
   static editRoom = (roomCode, data) => {
     Socket.emit(roomCode, {
-      type: RoomService.types.ROOM_EDIT,
+      type: LobbyService.types.ROOM_EDIT,
       data,
     });
   }
@@ -200,19 +200,19 @@ class LobbyService {
 
   static async processRoomEdit({roomCode, data}) {
     Socket.emit(roomCode, {
-      type: RoomService.types.ROOM_EDIT,
+      type: LobbyService.types.ROOM_EDIT,
       data,
     });
     const {key, value} = data;
-    const room = await RoomService.getPublicRoomDetail(roomCode);
+    const room = await LobbyService.getPublicRoomDetail(roomCode);
     switch (key) {
       case 'Round':
         room.rounds = value;
-        RoomService.onEditLobbySocket(room.roomCode, 'rounds', value);
+        LobbyService.onEditLobbySocket(room.roomCode, 'rounds', value);
         break;
       case 'Draw Time':
         room.drawTime = value;
-        RoomService.onEditLobbySocket(room.roomCode, 'drawTime', value);
+        LobbyService.onEditLobbySocket(room.roomCode, 'drawTime', value);
         break;
       case 'Sub_Category':
         // room.category = data.value;
@@ -220,11 +220,11 @@ class LobbyService {
       case 'Privacy':
         room.privacy = value;
         if (value === 'PRIVATE') {
-          Socket.emit(RoomService.types.DELETED_LOBBY, {
+          Socket.emit(LobbyService.types.DELETED_LOBBY, {
             roomCode: room.roomCode,
           });
         } else {
-          RoomService.onCreateLobbySocket(room);
+          LobbyService.onCreateLobbySocket(room);
         }
         break;
     }
@@ -233,7 +233,7 @@ class LobbyService {
 
   static sendNewRoomSocket = (privacy, room) => {
     if (privacy === 'PUBLIC') {
-      Socket.emit(RoomService.types.NEW_LOBBY, RoomService.filterRoom(room));
+      Socket.emit(LobbyService.types.NEW_LOBBY, LobbyService.filterRoom(room));
     }
   }
 
@@ -245,7 +245,7 @@ class LobbyService {
 
   static filterRoom = (roomData) => {
     const room = JSON.parse(JSON.stringify(roomData));
-    RoomService.setRoomProperties(room);
+    LobbyService.setRoomProperties(room);
     return room;
   }
 
@@ -261,7 +261,7 @@ class LobbyService {
     }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']).sort('-updatedAt');
     const allPublicRooms = JSON.parse(JSON.stringify(allRooms));
     for (const room of allPublicRooms) {
-      RoomService.setRoomProperties(room);
+      LobbyService.setRoomProperties(room);
     }
     return allPublicRooms;
   }

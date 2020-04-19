@@ -1,6 +1,6 @@
 import Responses from '../utils/responses';
 import GameService from '../services/game.service';
-import RoomService from '../services/room.service';
+import LobbyService from '../services/lobby.service';
 import EventHandler from '../utils/EventHandler';
 
 class GameController {
@@ -10,12 +10,12 @@ class GameController {
         return Responses.error(res, 'Please provide roomCode');
       }
       try {
-        const foundRoom = await RoomService.getRoomDetail(roomCode);
+        const foundRoom = await LobbyService.getRoomDetail(roomCode);
         if (!foundRoom) {
           return Responses.error(res, 'Invalid Lobby');
         }
 
-        if (!RoomService.findIsRoomOwner(foundRoom, req.user._id)) {
+        if (!LobbyService.findIsRoomOwner(foundRoom, req.user._id)) {
           return Responses.error(res, 'You are not owner of lobby. Only owner can kick player');
         }
         const response = await GameService.startGame(foundRoom);

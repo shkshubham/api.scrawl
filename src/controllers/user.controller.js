@@ -1,7 +1,7 @@
 import Responses from '../utils/responses';
 import UserService from '../services/user.service';
 import Utils from '../utils';
-import RoomService from '../services/room.service';
+import LobbyService from '../services/lobby.service';
 class UserController {
   static auth = async (req, res) => {
     try {
@@ -80,7 +80,7 @@ class UserController {
       if (!user) {
         return Responses.error(res, 'Invalid user');
       }
-      const room = await RoomService.getRoomWithOwnerDetail(roomCode);
+      const room = await LobbyService.getRoomWithOwnerDetail(roomCode);
       if (!room) {
         return Responses.error(res, 'Please provide valid room code');
       }

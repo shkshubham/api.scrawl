@@ -1,6 +1,6 @@
 import socket from 'socket.io';
 import Logger from '../utils/logger';
-import RoomService from './room.service';
+import LobbyService from './lobby.service';
 import EventHandler from '../utils/EventHandler';
 
 class Socket {
@@ -17,7 +17,7 @@ class Socket {
           Logger.log('table', {
             'ROOM_CLIENT_EDIT': data,
           });
-          RoomService.processRoomEdit(data);
+          LobbyService.processRoomEdit(data);
         });
         client.on('disconnect', () => {
           Logger.log('table', {
