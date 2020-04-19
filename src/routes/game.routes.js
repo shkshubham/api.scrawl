@@ -5,6 +5,7 @@ const router = Routes.Router();
 
 router.get('/start/:roomCode', Auth.UserAccess, GameController.startGame);
 router.post('/select/word', Auth.UserAccess, GameController.selectWord);
+router.post('/game/init', Auth.UserAccess, GameController.init);
 
 export default router;
 

@@ -12,7 +12,7 @@ class GameController {
       try {
         const foundRoom = await RoomService.getRoomDetail(roomCode);
         if (!foundRoom) {
-          return Responses.error(res, 'Please provide valid roomCode');
+          return Responses.error(res, 'Invalid Lobby');
         }
 
         if (!RoomService.findIsRoomOwner(foundRoom, req.user._id)) {
@@ -32,6 +32,10 @@ class GameController {
       } catch (err) {
         return Responses.unknown(res, err);
       }
+    }
+
+    static init = async (req, res) => {
+
     }
 }
 

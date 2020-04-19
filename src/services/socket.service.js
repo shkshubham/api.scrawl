@@ -24,24 +24,22 @@ class Socket {
             Disconnected: true,
           });
         });
-        client.on('CLIENT_DRAWING_TOUCH', (data) => {
-          Logger.log('log', data);
-          this.io.emit('SERVER_DRAWING_TOUCH', data);
-        });
-        client.on('CLIENT_DRAWING_RELEASE', (data) => {
-          Logger.log('log', data);
-          this.io.emit('SERVER_DRAWING_RELEASE', data);
-        });
+
+        // client.on('CLIENT_DRAWING_TOUCH', (data) => {
+        //   Logger.log('log', data);
+        //   this.io.emit('SERVER_DRAWING_TOUCH', data);
+        // });
+        // client.on('CLIENT_DRAWING_RELEASE', (data) => {
+        //   Logger.log('log', data);
+        //   this.io.emit('SERVER_DRAWING_RELEASE', data);
+        // });
+
         client.on('CLIENT_CHAT', ({roomCode, data}) => {
           EventHandler.eventEmitter.emit(roomCode, {
             type: 'CLIENT_CHAT',
             data,
           });
-          // Drawing.processComments(roomCode, data);
         });
-        // client.on('TIMER', ({roomCode, time})=> {
-        //   EventHandler.eventEmitter.emit(roomCode, time);
-        // });
       });
     }
 
