@@ -1,5 +1,7 @@
 /* eslint-disable max-len */
 
+import commonEnglish from './english/common';
+
 export const category = [
   {
     name: 'movies',
@@ -15,6 +17,11 @@ export const category = [
     name: 'actors',
     language: 'hindi',
     words: ['Salman', 'Srk'],
+  },
+  {
+    name: 'common',
+    language: 'english',
+    words: commonEnglish,
   },
 ];
 

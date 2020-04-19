@@ -20,7 +20,7 @@ class LobbyService {
       roomCode,
       drawTime: drawTime[2],
       rounds: rounds[2],
-      category: '5e78f803125a036cb368fbc4',
+      category: '5e9cac1d88aae73ea44371a7',
       owner: {
         user: user._id,
       },

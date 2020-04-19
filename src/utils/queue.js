@@ -9,8 +9,7 @@ class Queue {
     static processGameQueue({data}, done) {
       try {
         const game = new Game(data);
-        console.log('----------------', game);
-
+        console.log('Game: => ', game);
         game.startGame();
         done();
         // Socket.io.emit('SERVER_GUESS_WORD', );

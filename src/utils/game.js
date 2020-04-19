@@ -17,11 +17,11 @@ class Game {
     const {rounds, drawTime, users, category, roomCode, owner} = room;
     this.roomCode = roomCode;
     this.playerGuessed = {};
-    this.rounds = rounds;
+    this.rounds = Number(rounds);
     this.roundsCounter = 1;
     this.drawTime = drawTime;
     this.users = [owner, ...users];
-    this.time = drawTime;
+    this.time = Number(drawTime);
     this.words = [];
     this.selectedWords = {};
     this.wordSelectionList = [];
@@ -30,10 +30,21 @@ class Game {
     this.currentDrawingPlayerId = '';
     this.currentSelectedWord = '';
     this.timerIntervalId = null;
+    this.scorePerSecond = 10;
+    this.isDrawingPlayerGotPoint = false;
     EventHandler.eventEmitter.on(this.roomCode, ({type, data}) => {
       switch (type) {
         case 'CLIENT_CHAT':
           this.processComments(this.roomCode, data);
+          break;
+        case 'CLIENT_DRAWING_RELEASE':
+          this.sendDrawingPathToClient('SERVER_DRAWING_RELEASE', data);
+          break;
+        case 'CLIENT_DRAWING_TOUCH':
+          this.sendDrawingPathToClient('SERVER_DRAWING_TOUCH', data);
+          break;
+        case 'CLIENT_CLEAR_CLEAR':
+          this.sendDrawingPathToClient('SERVER_CLEAR_CLEAR', data);
           break;
       }
     });
@@ -42,6 +53,15 @@ class Game {
   async getWords() {
     const categoryWord = await Database.Category.findById(this.categoryId);
     this.words = categoryWord.words;
+  }
+
+
+  sendDrawingPathToClient(type, data) {
+    console.log('DRAWING', type, data);
+    Socket.emit(this.roomCode, {
+      type,
+      data,
+    });
   }
 
   getGameWords() {
@@ -53,7 +73,7 @@ class Game {
   }
 
   timeCallback() {
-    this.time -= 10;
+    this.time -= 1;
     Socket.emit(this.roomCode, {
       type: this.types.LOBBY_TIMER,
       data: this.time,
@@ -130,7 +150,7 @@ class Game {
         const {score, user} = selectingUser[0];
         const {_id, name, picture} = user;
         this.currentDrawingPlayerId = _id;
-        console.log('===============', `CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`);
+        console.log('User: => ', `CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`);
         Socket.emit(`CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, this.wordSelectionList);
         Socket.emit(this.roomCode, {
           type: 'CLIENT_PLAYER_SELECTING_WORD',
@@ -156,7 +176,19 @@ class Game {
     return `SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`;
   }
 
+  sorting(a, b) {
+    if (a.score > b.score) return -1;
+    if (b.score > a.score) return 1;
+
+    return 0;
+  }
+
+  sortScore(data) {
+    return data.sort(this.sorting);
+  }
+
   startNewDrawing() {
+    this.isDrawingPlayerGotPoint = true;
     this.wordSelectionList = [];
     this.playerGuessed = {};
     this.time = Number(this.drawTime);
@@ -173,22 +205,22 @@ class Game {
         picture,
       });
     }
-    return usersScoreData;
+    return this.sortScore(usersScoreData);
   }
 
   getUserScore() {
     const usersScoreData = [];
-    for (const {user} of this.users) {
+    for (const {user, score} of this.users) {
       usersScoreData.push({
         score,
         name: user.name,
       });
     }
-    return usersScoreData;
+    return this.sortScore(usersScoreData);
   }
 
   startNewRound() {
-    if (this.roundsCounter !== Number(this.rounds)) {
+    if (this.roundsCounter !== this.rounds) {
       this.roundsCounter +=1;
       this.wordSelectionPlayerLeft = JSON.parse(JSON.stringify(this.users));
       Socket.emit(this.roomCode, {
@@ -221,16 +253,48 @@ class Game {
     });
   }
 
+  getScore() {
+    return Math.round(this.time * this.scorePerSecond);
+  }
+
+  setPlayerGuessed(id) {
+    this.playerGuessed = {
+      ...this.playerGuessed,
+      [id]: true,
+    };
+  }
+
+  setScore(data) {
+    const foundUser = this.users.find(({user}) => user._id === data.user.userId);
+
+    if (!this.isDrawingPlayerGotPoint) {
+      this.isDrawingPlayerGotPoint = true;
+      const playerDrawing = this.users.find(({user}) => user._id === this.currentDrawingPlayerId);
+      playerDrawing.score = (this.getScore() - 50) + Number(foundUser.score);
+    }
+
+    foundUser.score = this.getScore() + Number(foundUser.score);
+
+    this.setPlayerGuessed(data.user.userId);
+    console.log(Object.keys(this.playerGuessed).length, this.users.length -1);
+    if (Object.keys(this.playerGuessed).length !== this.users.length -1) {
+      this.time -= 5;
+    } else {
+      this.time = 1;
+    }
+  }
+
   checkAndSetWord(roomCode, data) {
     const {message} = data;
     if (message.length) {
       const found = message.find((word) => word.toLowerCase() === this.currentSelectedWord);
-      console.log('Found Word: ', found, this.currentSelectedWord);
+      console.log('Found Word: ', found, this.currentSelectedWord, message);
       if (found) {
         Socket.emit(roomCode, {
           type: this.types.LOBBY_PLAYER_GUESSED_WORD,
           data: data.user.userId,
         });
+        this.setScore(data);
         data.message = 'Guessed the word';
       } else {
         data.message = message[0];
