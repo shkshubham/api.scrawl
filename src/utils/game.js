@@ -9,11 +9,16 @@ class Game {
     this.types = {
       LOBBY_CHAT: 'LOBBY_CHAT',
       LOBBY_PLAYER_GUESSED_WORD: 'LOBBY_PLAYER_GUESSED_WORD',
+      LOBBY_TIMER: 'LOBBY_TIMER',
+      LOBBY_TIME_UP: 'LOBBY_TIME_UP',
+      LOBBY_ROUNDS: 'LOBBY_ROUNDS',
+      GAME_OVER: 'GAME_OVER',
     };
     const {rounds, drawTime, users, category, roomCode, owner} = room;
     this.roomCode = roomCode;
     this.playerGuessed = {};
     this.rounds = rounds;
+    this.roundsCounter = 1;
     this.drawTime = drawTime;
     this.users = [owner, ...users];
     this.time = drawTime;
@@ -24,6 +29,7 @@ class Game {
     this.categoryId = category._id;
     this.currentDrawingPlayerId = '';
     this.currentSelectedWord = '';
+    this.timerIntervalId = null;
     EventHandler.eventEmitter.on(this.roomCode, ({type, data}) => {
       switch (type) {
         case 'CLIENT_CHAT':
@@ -47,12 +53,36 @@ class Game {
   }
 
   timeCallback() {
-    this.time += 1;
-    Socket.emit(this.roomCode, this.time);
+    this.time -= 10;
+    Socket.emit(this.roomCode, {
+      type: this.types.LOBBY_TIMER,
+      data: this.time,
+    });
+    if (this.time === 0) {
+      clearInterval(this.timerIntervalId);
+      this.timerIntervalId = null;
+      Socket.emit(this.roomCode, {
+        type: this.types.LOBBY_TIME_UP,
+        data: {
+          word: this.currentSelectedWord,
+          usersScoreData: this.getUserScore(),
+        },
+      });
+      EventHandler.eventEmitter.removeAllListeners(this.getServerLobbyChooseWordEventName(), function() {
+        console.log('removed');
+      });
+      setTimeout(() => {
+        if (this.wordSelectionPlayerLeft.length) {
+          this.startNewDrawing();
+        } else {
+          this.startNewRound();
+        }
+      }, 2000);
+    }
   }
 
   sendTimerToClient() {
-    setInterval(this.timeCallback, 1000);
+    this.timerIntervalId = setInterval(() =>this.timeCallback(), 1000);
   }
 
   setSelectedWord(word) {
@@ -64,10 +94,6 @@ class Game {
 
   setWordSelectionPlayers() {
     this.wordSelectionPlayerLeft = JSON.parse(JSON.stringify(this.users));
-  }
-
-  startTime() {
-    this.time -= 1;
   }
 
   getTime() {
@@ -85,11 +111,11 @@ class Game {
         word+='_';
       }
     }
-    console.log('-------------------------', data, this.currentSelectedWord);
     Socket.emit(this.roomCode, {
       type: 'LOBBY_WORD',
       data: word,
     });
+    this.sendTimerToClient();
   }
 
   sendWordSelection() {
@@ -104,7 +130,7 @@ class Game {
         const {score, user} = selectingUser[0];
         const {_id, name, picture} = user;
         this.currentDrawingPlayerId = _id;
-
+        console.log('===============', `CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`);
         Socket.emit(`CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, this.wordSelectionList);
         Socket.emit(this.roomCode, {
           type: 'CLIENT_PLAYER_SELECTING_WORD',
@@ -117,27 +143,69 @@ class Game {
         });
         Logger.log('table', user);
         Logger.log('table', this.wordSelectionList);
-        console.log(`SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`);
+        console.log(this.getServerLobbyChooseWordEventName());
 
-        EventHandler.eventEmitter.on(`SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, (data) => this.wordSelectCallback(data));
+        EventHandler.eventEmitter.on(this.getServerLobbyChooseWordEventName(), (data) => this.wordSelectCallback(data));
       }
     } catch (err) {
       Logger.log('log', err);
     }
   }
 
+  getServerLobbyChooseWordEventName() {
+    return `SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`;
+  }
+
   startNewDrawing() {
+    this.wordSelectionList = [];
     this.playerGuessed = {};
-    this.time = this.drawTime;
+    this.time = Number(this.drawTime);
     this.sendWordSelection();
   }
 
+  getUsersGameOverScore() {
+    const usersScoreData = [];
+    for (const {score, user} of this.users) {
+      const {picture, name} = user;
+      usersScoreData.push({
+        score,
+        name,
+        picture,
+      });
+    }
+    return usersScoreData;
+  }
+
+  getUserScore() {
+    const usersScoreData = [];
+    for (const {user} of this.users) {
+      usersScoreData.push({
+        score,
+        name: user.name,
+      });
+    }
+    return usersScoreData;
+  }
+
   startNewRound() {
-    this.startNewDrawing();
+    if (this.roundsCounter !== Number(this.rounds)) {
+      this.roundsCounter +=1;
+      this.wordSelectionPlayerLeft = JSON.parse(JSON.stringify(this.users));
+      Socket.emit(this.roomCode, {
+        type: this.types.LOBBY_ROUNDS,
+        data: this.roundsCounter,
+      });
+      this.startNewDrawing();
+    } else {
+      Socket.emit(this.roomCode, {
+        type: this.types.GAME_OVER,
+        data: this.getUsersGameOverScore(),
+      });
+    }
   }
 
   startRounds() {
-    this.startNewRound();
+    this.startNewDrawing();
   }
 
   async startGame() {
