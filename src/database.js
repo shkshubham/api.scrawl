@@ -2,24 +2,24 @@ import {connect} from 'mongoose';
 import Config from './configs';
 import Logger from './utils/logger';
 import UserModelSchema from './models/User';
-import LobbySchema from './models/Lobby';
+import GameSchema from './models/Game';
 import CategorySchema from './models/Category';
-import RoomSchema from './models/Room';
+import LobbySchema from './models/Lobby';
 import CountrySchema from './models/Country';
 
 class Database {
-    static User;
-    static Lobby;
-    static Category;
     static mongoose;
-    static Room;
+    static User;
+    static Game;
+    static Category;
+    static Lobby;
     static Country;
 
     static initModel() {
       this.User = Database.mongoose.model('User', UserModelSchema);
-      this.Lobby = Database.mongoose.model('Lobby', LobbySchema);
+      this.Game = Database.mongoose.model('Game', GameSchema);
       this.Category = Database.mongoose.model('Category', CategorySchema);
-      this.Room = Database.mongoose.model('Room', RoomSchema);
+      this.Lobby = Database.mongoose.model('Lobby', LobbySchema);
       this.Country = Database.mongoose.model('Country', CountrySchema);
     }
 

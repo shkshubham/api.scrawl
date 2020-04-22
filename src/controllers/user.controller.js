@@ -72,7 +72,7 @@ class UserController {
 
   static invite = async (req, res) => {
     try {
-      const {userId, roomCode} = req.body;
+      const {userId, lobbyCode} = req.body;
       if (userId === req.user._id) {
         return Responses.error(res, 'You can not invite yourself');
       }
@@ -80,11 +80,11 @@ class UserController {
       if (!user) {
         return Responses.error(res, 'Invalid user');
       }
-      const room = await LobbyService.getRoomWithOwnerDetail(roomCode);
-      if (!room) {
-        return Responses.error(res, 'Please provide valid room code');
+      const lobby = await LobbyService.getLobbyWithOwnerDetail(lobbyCode);
+      if (!lobby) {
+        return Responses.error(res, 'Please provide valid lobby code');
       }
-      await UserService.inviteUser(userId, room);
+      await UserService.inviteUser(userId, lobby);
       return Responses.normal(res, 'Invitation Sent');
     } catch (err) {
       return Responses.unknown(res, err);

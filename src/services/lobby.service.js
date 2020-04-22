@@ -2,22 +2,14 @@ import Database from '../database';
 import Utils from '../utils';
 import {drawTime, rounds} from '../data/lobby';
 import Socket from './socket.service';
-import Cache from '../cache';
+import Types from '../types/types';
+
 class LobbyService {
-  static types = {
-    ROOM_JOINED_LEAVED: 'ROOM_JOINED_LEAVED',
-    KICKED_PLAYER: 'KICKED_PLAYER',
-    ROOM_OWNER: 'ROOM_OWNER',
-    ROOM_EDIT: 'ROOM_EDIT',
-    NEW_LOBBY: 'NEW_LOBBY',
-    EDIT_LOBBY_FOR_HOME: 'EDIT_LOBBY',
-    DELETED_LOBBY: 'DELETED_LOBBY',
-  }
-  static createRoom = async (req) => {
+  static createLobby = async (req) => {
     const {user} = req;
-    const roomCode = Utils.generateRandomString();
-    const room = await Database.Room.create({
-      roomCode,
+    const lobbyCode = Utils.generateRandomString();
+    const lobby = await Database.Lobby.create({
+      lobbyCode,
       drawTime: drawTime[2],
       rounds: rounds[2],
       category: '5e9cac1d88aae73ea44371a7',
@@ -25,36 +17,36 @@ class LobbyService {
         user: user._id,
       },
     });
-    LobbyService.onCreateLobbySocket(room);
-    return room;
+    LobbyService.onCreateLobbySocket(lobby);
+    return lobby;
   }
 
-  static getRoomDetail = async (roomCode) => {
+  static getLobbyDetail = async (lobbyCode) => {
     const userFields = ['name', 'picture', 'email'];
     const categoryFields = ['name', 'language'];
-    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).populate('users.user', userFields).populate('category', categoryFields);
+    return await Database.Lobby.findOne({lobbyCode}).populate('owner.user', userFields).populate('users.user', userFields).populate('category', categoryFields);
   }
 
-  static findRoomByRoomCode = async (roomCode) => {
-    return await Database.Room.findOne({
-      roomCode,
+  static findLobbyByLobbyCode = async (lobbyCode) => {
+    return await Database.Lobby.findOne({
+      lobbyCode,
     });
   }
 
-  static getRoomWithOwnerDetail = async (roomCode) => {
+  static getLobbyWithOwnerDetail = async (lobbyCode) => {
     const userFields = ['name', 'picture'];
-    return await Database.Room.findOne({roomCode}).populate('owner.user', userFields).lean();
+    return await Database.Lobby.findOne({lobbyCode}).populate('owner.user', userFields).lean();
   }
 
-  static findOnRoom = (room, userId) => {
+  static findOnLobby = (lobby, userId) => {
     const payload = {
       isMember: false,
       index: -1,
     };
-    if (!room.users.length) {
+    if (!lobby.users.length) {
       return payload;
     }
-    const foundIndex = room.users.findIndex((userData) => userData.user._id.toString() === userId);
+    const foundIndex = lobby.users.findIndex((userData) => userData.user._id.toString() === userId);
     if (foundIndex > -1) {
       payload.isMember = true;
       payload.index = foundIndex;
@@ -63,44 +55,44 @@ class LobbyService {
     return payload;
   }
 
-  static roomJoin = async (userId, room) => {
-    const {isMember} = LobbyService.findOnRoom(room, userId);
+  static joinLobby = async (userId, lobby) => {
+    const {isMember} = LobbyService.findOnLobby(lobby, userId);
 
     if (isMember) {
-      Socket.emit(room.roomCode, {
-        type: LobbyService.types.ROOM_JOINED_LEAVED,
-        data: room.users,
+      Socket.emit(lobby.lobbyCode, {
+        type: Types.SOCKET_TYPES.LOBBY.JOINED_LEAVED,
+        data: lobby.users,
       });
       return {
-        room,
-        message: 'Room Joined',
+        lobby,
+        message: 'Lobby Joined',
       };
     }
 
-    room.users = room.users.concat({
+    lobby.users = lobby.users.concat({
       user: userId,
     });
-    LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
-    await room.save();
-    const roomAfterUpdate = await LobbyService.getRoomDetail(room.roomCode);
-    Socket.emit(room.roomCode, {
-      type: LobbyService.types.ROOM_JOINED_LEAVED,
-      data: roomAfterUpdate.users,
+    LobbyService.onEditLobbySocket(lobby.lobbyCode, 'users', lobby.users.length);
+    await lobby.save();
+    const lobbyAfterUpdate = await LobbyService.getlobbyDetail(lobby.lobbyCode);
+    Socket.emit(lobby.lobbyCode, {
+      type: Types.SOCKET_TYPES.LOBBY.JOINED_LEAVED,
+      data: lobbyAfterUpdate.users,
     });
     return {
-      room: roomAfterUpdate,
-      message: 'Room Joined',
+      lobby: lobbyAfterUpdate,
+      message: 'Lobby Joined',
     };
   }
 
-  static onCreateLobbySocket = async (room) => {
-    const filteredRoom = await LobbyService.getPublicRoomDetail(room.roomCode);
-    LobbyService.sendNewRoomSocket(room.privacy, filteredRoom);
+  static onCreateLobbySocket = async (lobby) => {
+    const filteredLobby = await LobbyService.getPublicLobbyDetail(lobby.lobbyCode);
+    LobbyService.sendNewLobbySocket(lobby.privacy, filteredLobby);
   }
 
-  static onEditLobbySocket = async (roomCode, key, value) => {
-    Socket.emit(LobbyService.types.EDIT_LOBBY_FOR_HOME, {
-      roomCode,
+  static onEditLobbySocket = async (lobbyCode, key, value) => {
+    Socket.emit(Types.SOCKET_TYPES.LOBBY.PUBLIC_LOBBY_EDIT, {
+      lobbyCode,
       data: {
         key,
         value,
@@ -108,17 +100,17 @@ class LobbyService {
     });
   }
 
-  static findIsRoomOwner = (room, userId) => {
-    return room.owner.user._id.toString() === userId;
+  static findIsLobbyOwner = (lobby, userId) => {
+    return lobby.owner.user._id.toString() === userId;
   }
 
-  static leaveRoom = async (userId, room) => {
-    const {isMember, index} = LobbyService.findOnRoom(room, userId);
+  static leaveLobby = async (userId, lobby) => {
+    const {isMember, index} = LobbyService.findOnLobby(lobby, userId);
     if (!isMember) {
-      const isOwner = LobbyService.findIsRoomOwner(room, userId);
+      const isOwner = LobbyService.findIsLobbyOwner(lobby, userId);
       if (isOwner) {
-        if (room.users.length) {
-          const userData = JSON.parse(JSON.stringify(room.users[0]));
+        if (lobby.users.length) {
+          const userData = JSON.parse(JSON.stringify(lobby.users[0]));
           const data = {
             user: {
               _id: userData.user._id,
@@ -127,177 +119,142 @@ class LobbyService {
               name: userData.user.name,
             },
           };
-          room.owner = {
+          lobby.owner = {
             user: userData.user._id,
             score: userData.user.score,
           };
-          LobbyService.removeUserFromRoom(room, 0);
-          Socket.emit(room.roomCode, {
-            type: LobbyService.types.ROOM_OWNER,
+          LobbyService.removeUserFromLobby(lobby, 0);
+          Socket.emit(lobby.lobbyCode, {
+            type: Types.SOCKET_TYPES.LOBBY.LOBBY_OWNER,
             data,
           });
-          Socket.emit(room.roomCode, {
-            type: LobbyService.types.ROOM_JOINED_LEAVED,
-            data: room.users,
+          Socket.emit(lobby.lobbyCode, {
+            type: Types.SOCKET_TYPES.LOBBY.JOINED_LEAVED,
+            data: lobby.users,
           });
-          LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
-          await room.save();
-          return 'Leaved Room';
+          LobbyService.onEditLobbySocket(lobby.lobbyCode, 'users', lobby.users.length);
+          await lobby.save();
+          return 'Leaved Lobby';
         } else {
-          Socket.emit(LobbyService.types.DELETED_LOBBY, {
-            roomCode: room.roomCode,
+          Socket.emit(Types.SOCKET_TYPES.LOBBY.DELETED_LOBBY, {
+            lobbyCode: lobby.lobbyCode,
           });
-          await room.delete();
-          return 'Room Deleted';
+          await lobby.delete();
+          return 'Lobby Deleted';
         }
       } else {
-        return 'You can not the member of the room';
+        return 'You can not the member of the lobby';
       }
     }
-    LobbyService.removeUserFromRoom(room, index);
-    Socket.emit(room.roomCode, {
-      type: LobbyService.types.ROOM_JOINED_LEAVED,
-      data: room.users,
+    LobbyService.removeUserFromLobby(lobby, index);
+    Socket.emit(lobby.lobbyCode, {
+      type: Types.SOCKET_TYPES.LOBBY.JOINED_LEAVED,
+      data: lobby.users,
     });
-    LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
-    await room.save();
-    return 'Leaved Room';
+    LobbyService.onEditLobbySocket(lobby.lobbyCode, 'users', lobby.users.length);
+    await lobby.save();
+    return 'Leaved Lobby';
   }
 
-  static kickPlay = async (userId, room) => {
-    const {isMember, index} = LobbyService.findOnRoom(room, userId);
+  static kickPlayer = async (userId, lobby) => {
+    const {isMember, index} = LobbyService.findOnLobby(lobby, userId);
     if (!isMember) {
       return 'You can not kick play. Who is not in lobby';
     }
-    const kickedPlay = LobbyService.removeUserFromRoom(room, index);
+    const kickedPlay = LobbyService.removeUserFromLobby(lobby, index);
     const kickedPlayId = kickedPlay[0].user._id;
-    room.kickedUsers = room.kickedUsers.concat(kickedPlayId);
-    Socket.emit(room.roomCode, {
-      type: LobbyService.types.ROOM_JOINED_LEAVED,
-      data: room.users,
+    lobby.kickedUsers = lobby.kickedUsers.concat(kickedPlayId);
+    Socket.emit(lobby.lobbyCode, {
+      type: Types.SOCKET_TYPES.LOBBY.JOINED_LEAVED,
+      data: lobby.users,
     });
-    Socket.emit(room.roomCode, {
-      type: LobbyService.types.KICKED_PLAYER,
+    Socket.emit(lobby.lobbyCode, {
+      type: Types.SOCKET_TYPES.LOBBY.KICKED_PLAYER,
       data: {
         id: kickedPlayId,
       },
     });
-    LobbyService.onEditLobbySocket(room.roomCode, 'users', room.users.length);
-    await room.save();
+    LobbyService.onEditLobbySocket(lobby.lobbyCode, 'users', lobby.users.length);
+    await lobby.save();
     return 'Play Kicked';
   }
 
-  static editRoom = (roomCode, data) => {
-    Socket.emit(roomCode, {
-      type: LobbyService.types.ROOM_EDIT,
+  static editLobby = (lobbyCode, data) => {
+    Socket.emit(lobbyCode, {
+      type: Types.SOCKET_TYPES.LOBBY.EDIT.CLIENT,
       data,
     });
   }
 
-  static removeUserFromRoom = (room, index) => {
-    return room.users.splice(index, 1);
+  static removeUserFromLobby = (lobby, index) => {
+    return lobby.users.splice(index, 1);
   }
 
-  static async processRoomEdit({roomCode, data}) {
-    Socket.emit(roomCode, {
-      type: LobbyService.types.ROOM_EDIT,
+  static async processLobbyEdit({lobbyCode, data}) {
+    Socket.emit(lobbyCode, {
+      type: Types.SOCKET_TYPES.LOBBY.EDIT.CLIENT,
       data,
     });
     const {key, value} = data;
-    const room = await LobbyService.getPublicRoomDetail(roomCode);
+    const lobby = await LobbyService.getPublicLobbyDetail(lobbyCode);
     switch (key) {
       case 'Round':
-        room.rounds = value;
-        LobbyService.onEditLobbySocket(room.roomCode, 'rounds', value);
+        lobby.rounds = value;
+        LobbyService.onEditLobbySocket(lobby.lobbyCode, 'rounds', value);
         break;
       case 'Draw Time':
-        room.drawTime = value;
-        LobbyService.onEditLobbySocket(room.roomCode, 'drawTime', value);
+        lobby.drawTime = value;
+        LobbyService.onEditLobbySocket(lobby.lobbyCode, 'drawTime', value);
         break;
       case 'Sub_Category':
-        // room.category = data.value;
+        // lobby.category = data.value;
         break;
       case 'Privacy':
-        room.privacy = value;
+        lobby.privacy = value;
         if (value === 'PRIVATE') {
-          Socket.emit(LobbyService.types.DELETED_LOBBY, {
-            roomCode: room.roomCode,
+          Socket.emit(Types.SOCKET_TYPES.LOBBY.DELETED_LOBBY, {
+            lobbyCode: lobby.lobbyCode,
           });
         } else {
-          LobbyService.onCreateLobbySocket(room);
+          LobbyService.onCreateLobbySocket(lobby);
         }
         break;
     }
-    await room.save();
+    await lobby.save();
   }
 
-  static sendNewRoomSocket = (privacy, room) => {
+  static sendNewLobbySocket = (privacy, lobby) => {
     if (privacy === 'PUBLIC') {
-      Socket.emit(LobbyService.types.NEW_LOBBY, LobbyService.filterRoom(room));
+      Socket.emit(Types.SOCKET_TYPES.LOBBY.NEW_LOBBY, LobbyService.filterLobby(lobby));
     }
   }
 
-  static getPublicRoomDetail = async (roomCode) => {
-    return await Database.Room.findOne({
-      roomCode,
+  static getPublicLobbyDetail = async (lobbyCode) => {
+    return await Database.Lobby.findOne({
+      lobbyCode,
     }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']);
   }
 
-  static filterRoom = (roomData) => {
-    const room = JSON.parse(JSON.stringify(roomData));
-    LobbyService.setRoomProperties(room);
-    return room;
+  static filterLobby = (lobbyData) => {
+    const lobby = JSON.parse(JSON.stringify(lobbyData));
+    LobbyService.setLobbyProperties(lobby);
+    return lobby;
   }
 
-  static setRoomProperties = (room) => {
-    delete room.kickedUsers;
-    room.owner.user.name = room.owner.user.name.split(' ')[0];
-    room.users = room.users.length;
+  static setLobbyProperties = (lobby) => {
+    delete lobby.kickedUsers;
+    lobby.owner.user.name = lobby.owner.user.name.split(' ')[0];
+    lobby.users = lobby.users.length;
   }
 
-  static getAllPublicRooms = async () => {
-    const allRooms = await Database.Room.find({
+  static getAllPublicLobbies = async () => {
+    const allLobbies = await Database.Lobby.find({
       privacy: 'PUBLIC',
-    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']).sort('-updatedAt');
-    const allPublicRooms = JSON.parse(JSON.stringify(allRooms));
-    for (const room of allPublicRooms) {
-      LobbyService.setRoomProperties(room);
+    }).populate('category', ['name', 'language']).populate('owner.user', ['email', 'name']).sort('-updatedAt').lean();
+    for (const lobby of allLobbies) {
+      LobbyService.setLobbyProperties(lobby);
     }
-    return allPublicRooms;
-  }
-
-  static getLobbyDetails = async () => {
-    const cachedLobbyData = Cache.get('LOBBY_INIT');
-    if (cachedLobbyData) {
-      return cachedLobbyData;
-    }
-
-    const lobbyData = await Database.Lobby.findOne().lean();
-    const foundCategories = await Database.Category.find().select(['name', 'language']).lean();
-    const languageData = {};
-    for (const {language, name, _id} of foundCategories) {
-      const foundKeyData = languageData[language];
-      const newData = {
-        name,
-        _id,
-      };
-      if (foundKeyData) {
-        languageData[language] = [
-          ...foundKeyData,
-          newData,
-        ];
-      } else {
-        languageData[language] = [
-          newData,
-        ];
-      }
-    }
-    const payload = {
-      ...lobbyData,
-      language: languageData,
-    };
-    Cache.set('LOBBY_INIT', payload);
-    return payload;
+    return allLobbies;
   }
 }
 

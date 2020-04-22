@@ -28,7 +28,7 @@ class Init {
   }
 
   static async data() {
-    const lobbyData = await Database.Lobby.findOne().lean();
+    const lobbyData = await Database.Game.findOne().lean();
     const foundCategories = await Database.Category.find().select(['name', 'language']).lean();
     if (!foundCategories.length) {
       for (const cat of category) {
@@ -36,7 +36,7 @@ class Init {
       }
     }
     if (!lobbyData) {
-      return await Database.Lobby.create({
+      return await Database.Game.create({
         rounds,
         drawTime,
       });

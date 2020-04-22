@@ -1,11 +1,8 @@
 import Database from '../database';
 import Socket from './socket.service';
+import Types from '../types/types';
 
 class UserService {
-  static types = {
-    LOOKING_PLAYERS_JOINED: 'LOOKING_PLAYERS_JOINED',
-    LOOKING_PLAYERS_LEAVED: 'LOOKING_PLAYERS_LEAVED',
-  }
   static auth = async (userData) => {
     try {
       const {email, sub} = userData;
@@ -75,7 +72,7 @@ class UserService {
     }
     switch (req.params.type) {
       case 'enable':
-        Socket.emit(UserService.types.LOOKING_PLAYERS_JOINED, user);
+        Socket.emit(Types.SOCKET_TYPES.LOOKING.PLAYERS_JOINED, user);
         await user.update({
           looking: true,
         });
@@ -84,7 +81,7 @@ class UserService {
           message: 'Enabled',
         };
       case 'disable':
-        Socket.emit(UserService.types.LOOKING_PLAYERS_LEAVED, user);
+        Socket.emit(Types.SOCKET_TYPES.LOOKING.PLAYERS_LEAVED, user);
         await user.update({
           looking: false,
         });
@@ -104,10 +101,10 @@ class UserService {
     return await Database.User.find({looking: true}).populate('country').select(['name', 'picture']).lean();
   }
 
-  static async inviteUser(userId, room) {
-    room.users = room.users.length;
-    delete room.kickedUsers;
-    Socket.emit(userId, room);
+  static async inviteUser(userId, lobby) {
+    lobby.users = lobby.users.length;
+    delete lobby.kickedUsers;
+    Socket.emit(userId, lobby);
   }
 }
 

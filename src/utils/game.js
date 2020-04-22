@@ -3,19 +3,13 @@ import Database from '../database';
 import Utils from '.';
 import Logger from './logger';
 import EventHandler from './EventHandler';
+import Types from '../types/types';
+
 
 class Game {
-  constructor(room) {
-    this.types = {
-      LOBBY_CHAT: 'LOBBY_CHAT',
-      LOBBY_PLAYER_GUESSED_WORD: 'LOBBY_PLAYER_GUESSED_WORD',
-      LOBBY_TIMER: 'LOBBY_TIMER',
-      LOBBY_TIME_UP: 'LOBBY_TIME_UP',
-      LOBBY_ROUNDS: 'LOBBY_ROUNDS',
-      GAME_OVER: 'GAME_OVER',
-    };
-    const {rounds, drawTime, users, category, roomCode, owner} = room;
-    this.roomCode = roomCode;
+  constructor(lobby) {
+    const {rounds, drawTime, users, category, lobbyCode, owner} = lobby;
+    this.lobbyCode = lobbyCode;
     this.playerGuessed = {};
     this.rounds = Number(rounds);
     this.roundsCounter = 1;
@@ -32,19 +26,19 @@ class Game {
     this.timerIntervalId = null;
     this.scorePerSecond = 10;
     this.isDrawingPlayerGotPoint = false;
-    EventHandler.eventEmitter.on(this.roomCode, ({type, data}) => {
+    EventHandler.eventEmitter.on(this.lobbyCode, ({type, data}) => {
       switch (type) {
-        case 'CLIENT_CHAT':
-          this.processComments(this.roomCode, data);
+        case Types.EVENT_EMITTER_TYPES.CHAT.CHAT:
+          this.processComments(this.lobbyCode, data);
           break;
-        case 'CLIENT_DRAWING_RELEASE':
-          this.sendDrawingPathToClient('SERVER_DRAWING_RELEASE', data);
+        case Types.EVENT_EMITTER_TYPES.DRAWING.RELEASE:
+          this.sendDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.RELEASE.SERVER, data);
           break;
-        case 'CLIENT_DRAWING_TOUCH':
-          this.sendDrawingPathToClient('SERVER_DRAWING_TOUCH', data);
+        case Types.EVENT_EMITTER_TYPES.DRAWING.TOUCH:
+          this.sendDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.TOUCH.SERVER, data);
           break;
-        case 'CLIENT_CLEAR_CLEAR':
-          this.sendDrawingPathToClient('SERVER_CLEAR_CLEAR', data);
+        case Types.EVENT_EMITTER_TYPES.DRAWING.CLEAR:
+          this.sendDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.CLEAR.SERVER, data);
           break;
       }
     });
@@ -58,7 +52,7 @@ class Game {
 
   sendDrawingPathToClient(type, data) {
     console.log('DRAWING', type, data);
-    Socket.emit(this.roomCode, {
+    Socket.emit(this.lobbyCode, {
       type,
       data,
     });
@@ -74,15 +68,15 @@ class Game {
 
   timeCallback() {
     this.time -= 1;
-    Socket.emit(this.roomCode, {
-      type: this.types.LOBBY_TIMER,
+    Socket.emit(this.lobbyCode, {
+      type: Types.SOCKET_TYPES.GAME.LOBBY_TIMER,
       data: this.time,
     });
     if (this.time === 0) {
       clearInterval(this.timerIntervalId);
       this.timerIntervalId = null;
-      Socket.emit(this.roomCode, {
-        type: this.types.LOBBY_TIME_UP,
+      Socket.emit(this.lobbyCode, {
+        type: Types.SOCKET_TYPES.GAME.LOBBY_TIME_UP,
         data: {
           word: this.currentSelectedWord,
           usersScoreData: this.getUserScore(),
@@ -131,7 +125,7 @@ class Game {
         word+='_';
       }
     }
-    Socket.emit(this.roomCode, {
+    Socket.emit(this.lobbyCode, {
       type: 'LOBBY_WORD',
       data: word,
     });
@@ -150,9 +144,9 @@ class Game {
         const {score, user} = selectingUser[0];
         const {_id, name, picture} = user;
         this.currentDrawingPlayerId = _id;
-        console.log('User: => ', `CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`);
-        Socket.emit(`CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`, this.wordSelectionList);
-        Socket.emit(this.roomCode, {
+        console.log('User: => ', `CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.lobbyCode}`);
+        Socket.emit(`CLIENT_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.lobbyCode}`, this.wordSelectionList);
+        Socket.emit(this.lobbyCode, {
           type: 'CLIENT_PLAYER_SELECTING_WORD',
           data: {
             _id,
@@ -173,7 +167,7 @@ class Game {
   }
 
   getServerLobbyChooseWordEventName() {
-    return `SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.roomCode}`;
+    return `SERVER_LOBBY_CHOOSE_WORD_${this.currentDrawingPlayerId}_${this.lobbyCode}`;
   }
 
   sorting(a, b) {
@@ -223,14 +217,14 @@ class Game {
     if (this.roundsCounter !== this.rounds) {
       this.roundsCounter +=1;
       this.wordSelectionPlayerLeft = JSON.parse(JSON.stringify(this.users));
-      Socket.emit(this.roomCode, {
-        type: this.types.LOBBY_ROUNDS,
+      Socket.emit(this.lobbyCode, {
+        type: Types.SOCKET_TYPES.GAME.LOBBY_ROUNDS,
         data: this.roundsCounter,
       });
       this.startNewDrawing();
     } else {
-      Socket.emit(this.roomCode, {
-        type: this.types.GAME_OVER,
+      Socket.emit(this.lobbyCode, {
+        type: Types.SOCKET_TYPES.GAME.GAME_OVER,
         data: this.getUsersGameOverScore(),
       });
     }
@@ -245,10 +239,10 @@ class Game {
     this.startRounds();
   }
 
-  processComments(roomCode, data) {
-    this.checkAndSetWord(roomCode, data);
-    Socket.emit(roomCode, {
-      type: this.types.LOBBY_CHAT,
+  processComments(lobbyCode, data) {
+    this.checkAndSetWord(lobbyCode, data);
+    Socket.emit(lobbyCode, {
+      type: Types.SOCKET_TYPES.GAME.LOBBY_CHAT,
       data,
     });
   }
@@ -284,14 +278,14 @@ class Game {
     }
   }
 
-  checkAndSetWord(roomCode, data) {
+  checkAndSetWord(lobbyCode, data) {
     const {message} = data;
     if (message.length) {
       const found = message.find((word) => word.toLowerCase() === this.currentSelectedWord);
       console.log('Found Word: ', found, this.currentSelectedWord, message);
       if (found) {
-        Socket.emit(roomCode, {
-          type: this.types.LOBBY_PLAYER_GUESSED_WORD,
+        Socket.emit(lobbyCode, {
+          type: Types.SOCKET_TYPES.GAME.LOBBY_PLAYER_GUESSED_WORD,
           data: data.user.userId,
         });
         this.setScore(data);
