@@ -6,8 +6,8 @@ const LobbyUserSchema = new Schema({
     ref: 'User',
   },
   score: {
-    type: String,
-    default: '0',
+    type: Number,
+    default: 0,
   },
 });
 

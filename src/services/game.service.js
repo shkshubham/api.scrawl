@@ -2,6 +2,7 @@ import Queue from '../utils/queue';
 import Socket from './socket.service';
 import Cache from '../cache';
 import Types from '../types/types';
+import Database from '../database';
 
 class GameService {
   static async startGame(foundLobby) {
@@ -24,33 +25,33 @@ class GameService {
     if (cachedLobbyData) {
       return cachedLobbyData;
     }
-
-    // const lobbyData = await Database.GAME.findOne().lean();
-    // const foundCategories = await Database.Category.find().select(['name', 'language']).lean();
-    // const languageData = {};
-    // for (const {language, name, _id} of foundCategories) {
-    //   const foundKeyData = languageData[language];
-    //   const newData = {
-    //     name,
-    //     _id,
-    //   };
-    //   if (foundKeyData) {
-    //     languageData[language] = [
-    //       ...foundKeyData,
-    //       newData,
-    //     ];
-    //   } else {
-    //     languageData[language] = [
-    //       newData,
-    //     ];
-    //   }
-    // }
-    // const payload = {
-    //   ...lobbyData,
-    //   language: languageData,
-    // };
+    const payload = {
+      types: Types.SOCKET_TYPES,
+    };
+    const gameData = await Database.Game.findOne().select(['rounds', 'drawTime', 'colors']).lean();
+    payload.gameData = gameData;
+    const foundCategories = await Database.Category.find().select(['name', 'language']);
+    const languageData = {};
+    for (const {language, name, _id} of foundCategories) {
+      const foundKeyData = languageData[language];
+      const newData = {
+        name,
+        _id,
+      };
+      if (foundKeyData) {
+        languageData[language] = [
+          ...foundKeyData,
+          newData,
+        ];
+      } else {
+        languageData[language] = [
+          newData,
+        ];
+      }
+    }
+    payload.gameData.category = languageData;
     // Cache.set('LOBBY_INIT', payload);
-    // return payload;
+    return payload;
   }
 }
 
