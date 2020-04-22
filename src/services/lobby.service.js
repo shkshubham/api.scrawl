@@ -74,7 +74,7 @@ class LobbyService {
     });
     LobbyService.onEditLobbySocket(lobby.lobbyCode, 'users', lobby.users.length);
     await lobby.save();
-    const lobbyAfterUpdate = await LobbyService.getlobbyDetail(lobby.lobbyCode);
+    const lobbyAfterUpdate = await LobbyService.getLobbyDetail(lobby.lobbyCode);
     Socket.emit(lobby.lobbyCode, {
       type: Types.SOCKET_TYPES.LOBBY.JOINED_LEAVED,
       data: lobbyAfterUpdate.users,
