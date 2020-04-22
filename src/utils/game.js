@@ -5,17 +5,16 @@ import Logger from './logger';
 import EventHandler from './EventHandler';
 import Types from '../types/types';
 
-
 class Game {
   constructor(lobby) {
     const {rounds, drawTime, users, category, lobbyCode, owner} = lobby;
     this.lobbyCode = lobbyCode;
     this.playerGuessed = {};
-    this.rounds = rounds;
+    this.rounds = Number(rounds);
     this.roundsCounter = 1;
     this.drawTime = drawTime;
     this.users = [owner, ...users];
-    this.time = drawTime;
+    this.time = Number(drawTime);
     this.words = [];
     this.selectedWords = {};
     this.wordSelectionList = [];
@@ -185,7 +184,7 @@ class Game {
     this.isDrawingPlayerGotPoint = true;
     this.wordSelectionList = [];
     this.playerGuessed = {};
-    this.time = this.drawTime;
+    this.time = Number(this.drawTime);
     this.sendWordSelection();
   }
 
@@ -264,10 +263,10 @@ class Game {
     if (!this.isDrawingPlayerGotPoint) {
       this.isDrawingPlayerGotPoint = true;
       const playerDrawing = this.users.find(({user}) => user._id === this.currentDrawingPlayerId);
-      playerDrawing.score = (this.getScore() - 50) + foundUser.score;
+      playerDrawing.score = (this.getScore() - 50) + Number(foundUser.score);
     }
 
-    foundUser.score = this.getScore() + foundUser.score;
+    foundUser.score = this.getScore() + Number(foundUser.score);
 
     this.setPlayerGuessed(data.user.userId);
     console.log(Object.keys(this.playerGuessed).length, this.users.length -1);
