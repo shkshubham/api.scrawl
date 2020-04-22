@@ -49,7 +49,7 @@ class GameService {
         ];
       }
     }
-    payload.gameData.category = languageData;
+    payload.gameData.language = languageData;
     // Cache.set('LOBBY_INIT', payload);
     return payload;
   }
