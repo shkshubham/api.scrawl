@@ -30,6 +30,9 @@ class Types {
         PLAYERS_JOINED: 'LOOKING_PLAYERS_JOINED',
         PLAYERS_LEAVED: 'LOOKING_PLAYERS_LEAVED',
       },
+      USER: {
+        SOCKET_CONNECTED: Types.createClientAndServerObj('SOCKET_CONNECTED'),
+      },
     }
 
     static EVENT_EMITTER_TYPES = {

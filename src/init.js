@@ -1,7 +1,7 @@
 import Socket from './services/socket.service';
 import Database from './database';
 import Routes from './routes/app';
-import {category, rounds, drawTime} from './data/lobby';
+import {category, rounds, drawTime, colors} from './data/lobby';
 import {countries} from './data/countries';
 import path from 'path';
 import fs from 'fs';
@@ -28,17 +28,18 @@ class Init {
   }
 
   static async data() {
-    const lobbyData = await Database.Game.findOne().lean();
+    const gameData = await Database.Game.findOne().lean();
     const foundCategories = await Database.Category.find().select(['name', 'language']).lean();
     if (!foundCategories.length) {
       for (const cat of category) {
         await Database.Category.create(cat);
       }
     }
-    if (!lobbyData) {
+    if (!gameData) {
       return await Database.Game.create({
         rounds,
         drawTime,
+        colors,
       });
     }
   }

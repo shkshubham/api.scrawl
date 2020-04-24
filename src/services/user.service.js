@@ -98,13 +98,39 @@ class UserService {
   }
 
   static async allLookingUsers() {
-    return await Database.User.find({looking: true}).populate('country').select(['name', 'picture']).lean();
+    return await Database.User.find({
+      $and: [
+        {socketId: {$ne: null}},
+        {looking: true},
+      ],
+    }).populate('country').select(['name', 'picture']).lean();
   }
 
   static async inviteUser(userId, lobby) {
     lobby.users = lobby.users.length;
     delete lobby.kickedUsers;
     Socket.emit(userId, lobby);
+  }
+
+  static async profile(user) {
+    const {_id} = user;
+    const lobbies = await Database.Lobby.find(
+        {$or: [{
+          users: {
+            $elemMatch: {
+              user: _id,
+            },
+          },
+        },
+        {
+          'owner.user': _id,
+        },
+        ]}
+    ).populate('users.user').select('name, picture');
+    return {
+      user,
+      lobbies,
+    };
   }
 }
 

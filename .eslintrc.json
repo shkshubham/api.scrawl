@@ -10,6 +10,7 @@
     "extends": ["eslint:recommended", "google"],
     "rules": {
         // Additional, per-project rules...
+        "quotes": ["double", "backtick"],
         "require-jsdoc": "off",
         "no-undef": "off",
         "new-cap": "off",

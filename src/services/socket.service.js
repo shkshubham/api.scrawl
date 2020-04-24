@@ -3,6 +3,7 @@ import Logger from '../utils/logger';
 import LobbyService from './lobby.service';
 import EventHandler from '../utils/EventHandler';
 import Types from '../types/types';
+import SocketProcess from '../process/socket.proccess';
 
 class Socket {
     static io;
@@ -10,17 +11,17 @@ class Socket {
     static init(server) {
       this.io = socket(server);
       this.io.on('connection', (client) => {
-        console.log('===========', Socket.getOnlineUsers());
         Logger.log('table', {
           'CONTECTED': client.id,
         });
-        this.client = client;
         client.on(Types.SOCKET_TYPES.LOBBY.EDIT.CLIENT, (data) => {
           LobbyService.processLobbyEdit(data);
         });
         client.on('disconnect', () => {
+          SocketProcess.processClientOnDisconnected(client.id);
           Logger.log('table', {
             Disconnected: true,
+            data: client.id,
           });
         });
 
@@ -49,6 +50,10 @@ class Socket {
             type: Types.EVENT_EMITTER_TYPES.CHAT.CHAT,
             data,
           });
+        });
+
+        client.on(Types.SOCKET_TYPES.USER.SOCKET_CONNECTED.CLIENT, (data) => {
+          SocketProcess.processClientOnConnected(data);
         });
       });
     }

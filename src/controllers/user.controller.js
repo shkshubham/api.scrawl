@@ -24,8 +24,9 @@ class UserController {
 
   static profile = async (req, res) => {
     try {
-      return Responses.normal(res, req.user);
-    } catch (error) {
+      const response = await UserService.profile(req.user);
+      return Responses.normal(res, response);
+    } catch (err) {
       return Responses.unknown(res, err);
     }
   }

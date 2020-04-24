@@ -48,6 +48,10 @@ const UserModelSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  socketId: {
+    type: String,
+    default: null,
+  },
   country: {
     type: Schema.Types.ObjectId,
     default: null,

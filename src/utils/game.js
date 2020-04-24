@@ -24,6 +24,7 @@ class Game {
     this.currentSelectedWord = '';
     this.timerIntervalId = null;
     this.scorePerSecond = 10;
+    this.drawingLinePath = null;
     this.isDrawingPlayerGotPoint = false;
     EventHandler.eventEmitter.on(this.lobbyCode, ({type, data}) => {
       switch (type) {
@@ -31,13 +32,13 @@ class Game {
           this.processComments(this.lobbyCode, data);
           break;
         case Types.EVENT_EMITTER_TYPES.DRAWING.RELEASE:
-          this.sendDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.RELEASE.SERVER, data);
+          this.sendReleaseDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.RELEASE.SERVER, data);
           break;
         case Types.EVENT_EMITTER_TYPES.DRAWING.TOUCH:
-          this.sendDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.TOUCH.SERVER, data);
+          this.sendTouchDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.TOUCH.SERVER, data);
           break;
         case Types.EVENT_EMITTER_TYPES.DRAWING.CLEAR:
-          this.sendDrawingPathToClient(Types.SOCKET_TYPES.DRAWING.CLEAR.SERVER, data);
+          this.sendClearToClient(Types.SOCKET_TYPES.DRAWING.CLEAR.SERVER, data);
           break;
       }
     });
@@ -49,8 +50,42 @@ class Game {
   }
 
 
-  sendDrawingPathToClient(type, data) {
+  setDrawingPath(data) {
+    if (this.drawingLinePath) {
+      const {
+        id,
+        color,
+        width,
+      } = data.path;
+      this.drawingLinePath.path.id = id;
+      // this.drawingLinePath.size ={width: 574.09521484375, height: 357.3333435058594};
+      this.drawingLinePath.path.data.push(...data.path.data);
+      this.drawingLinePath.path.color = color;
+      this.drawingLinePath.path.width = width;
+    } else {
+      this.drawingLinePath = data;
+    }
+  }
+
+  sendTouchDrawingPathToClient(type, data) {
     console.log('DRAWING', type, data);
+    this.setDrawingPath(data);
+    Socket.emit(this.lobbyCode, {
+      type,
+      // data: this.drawingLinePath,
+      data
+    });
+  }
+
+  sendReleaseDrawingPathToClient(type, data) {
+    Socket.emit(this.lobbyCode, {
+      type,
+      data: null,
+    });
+  }
+
+  sendClearToClient(type, data=null) {
+    this.drawingLinePath = null
     Socket.emit(this.lobbyCode, {
       type,
       data,
@@ -185,6 +220,7 @@ class Game {
     this.wordSelectionList = [];
     this.playerGuessed = {};
     this.time = Number(this.drawTime);
+    this.drawingLinePath = null;
     this.sendWordSelection();
   }
 
