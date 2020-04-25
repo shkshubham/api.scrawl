@@ -14,11 +14,11 @@ class GameService {
     lobby.users = [lobby.owner, ...lobby.users];
     delete lobby.owner;
    
-    Socket.emit(foundLobby.lobbyCode, {
-      type: Types.SOCKET_TYPES.GAME.STARTED,
-      data: lobby,
-    });
     Queue.gameQueue.add(foundLobby).then(() => {
+      Socket.emit(foundLobby.lobbyCode, {
+        type: Types.SOCKET_TYPES.GAME.STARTED,
+        data: lobby,
+      });
       Logger.normal("Game")
     }).catch(err => {
       Logger.normal("Game Error", err)

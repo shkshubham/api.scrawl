@@ -64,6 +64,7 @@ class Socket {
     
     static emit(eventName, data) {
       console.log('Socket: ', eventName, JSON.stringify(data));
+      this.io.emit(eventName, data);
     }
 
     static getOnlineUsers = () => {
