@@ -3,6 +3,7 @@ import Socket from './socket.service';
 import Cache from '../cache';
 import Types from '../types/types';
 import Database from '../database';
+import Logger from '../utils/logger';
 
 class GameService {
   static async startGame(foundLobby) {
@@ -12,11 +13,16 @@ class GameService {
     const lobby = JSON.parse(JSON.stringify(foundLobby));
     lobby.users = [lobby.owner, ...lobby.users];
     delete lobby.owner;
-    Socket.emit(foundLobby.lobbyCode, {
-      type: Types.SOCKET_TYPES.GAME.STARTED,
-      data: lobby,
+   
+    Queue.gameQueue.add(foundLobby).then(() => {
+      Logger.normal("Game")
+      Socket.emit(foundLobby.lobbyCode, {
+        type: Types.SOCKET_TYPES.GAME.STARTED,
+        data: lobby,
+      });
+    }).catch(err => {
+      Logger.normal("Game Error", err)
     });
-    Queue.gameQueue.add(foundLobby);
     return lobby;
   }
 

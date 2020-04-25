@@ -70,15 +70,16 @@ class Game {
   sendTouchDrawingPathToClient(type, data) {
     console.log('DRAWING', type, data);
     this.setDrawingPath(data);
-    Socket.emit(this.lobbyCode, {
+    Socket.emitDrawing(this.lobbyCode, {
       type,
-      // data: this.drawingLinePath,
-      data
+      data: this.drawingLinePath,
+      // data
     });
   }
 
   sendReleaseDrawingPathToClient(type, data) {
-    Socket.emit(this.lobbyCode, {
+    this.drawingLinePath = null;
+    Socket.emitDrawing(this.lobbyCode, {
       type,
       data: null,
     });
@@ -86,7 +87,7 @@ class Game {
 
   sendClearToClient(type, data=null) {
     this.drawingLinePath = null
-    Socket.emit(this.lobbyCode, {
+    Socket.emitDrawing(this.lobbyCode, {
       type,
       data,
     });

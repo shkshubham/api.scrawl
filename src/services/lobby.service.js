@@ -192,7 +192,7 @@ class LobbyService {
 
   static async processLobbyEdit({lobbyCode, data}) {
     Socket.emit(lobbyCode, {
-      type: Types.SOCKET_TYPES.LOBBY.EDIT.CLIENT,
+      type: Types.SOCKET_TYPES.LOBBY.EDIT.SERVER,
       data,
     });
     const {key, value} = data;
