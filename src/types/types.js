@@ -8,6 +8,7 @@ class Types {
         LOBBY_TIME_UP: 'LOBBY_TIME_UP',
         LOBBY_ROUNDS: 'LOBBY_ROUNDS',
         GAME_OVER: 'GAME_OVER',
+        WORD_HINT: "WORD_HINT"
       },
       LOBBY: {
         EDIT: Types.createClientAndServerObj('LOBBY_EDIT'),

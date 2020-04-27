@@ -6,10 +6,13 @@ import Database from './database';
 import {createServer} from 'http';
 import Queue from './utils/queue';
 const server = createServer(Routes.app);
-
+Queue.init()
 Database.init().then(() => {
   Init.init(server);
-  Queue.gameQueue.process(Queue.processGameQueue);
+  Queue.gameQueue.process((data, done) => {
+    console.log("Queue")
+    Queue.processGameQueue(data, done)
+  });
   server.listen(Config.SERVER_PORT, () => {
     Logger.log('table', {
       'Server Started': true,

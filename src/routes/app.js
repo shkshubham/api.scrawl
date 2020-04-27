@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import express from 'express';
 import morgan from 'morgan';
+import { UI } from 'bull-board';
 
 class Routes {
     static basename = path.basename(__filename);
@@ -40,6 +41,7 @@ class Routes {
     static init() {
       this.initApp();
       this.initAPI();
+      this.app.use('/admin/queues', UI)
     }
 }
 

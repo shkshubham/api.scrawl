@@ -58,7 +58,7 @@ class Socket {
       });
     }
 
-    static emitDrawing() {
+    static emitDrawing(eventName, data) {
       this.io.emit(eventName, data);
     }
     
