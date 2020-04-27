@@ -22,6 +22,8 @@ class Game {
     this.categoryId = category._id;
     this.currentDrawingPlayerId = '';
     this.currentSelectedWord = '';
+    this.wordHint = "";
+    this.wordHintIndexObj = {};
     this.timerIntervalId = null;
     this.scorePerSecond = 10;
     this.drawingLinePath = null;
@@ -101,12 +103,33 @@ class Game {
 
   }
 
+  getRandomIndex() {
+    const randomIndex = Utils.generateRandomNumber(this.wordHint);
+    if(wordHintIndexObj[randomIndex]) {
+      this.getRandomIndex()
+    }
+    wordHintIndexObj[randomIndex] = true;
+    return randomIndex;
+  }
+
+  randomWord() {
+    const randomIndex = this.getRandomIndex();
+    this.wordHint[randomIndex] = this.currentSelectedWord[randomIndex];
+    Socket.emit(this.lobbyCode, {
+      type: Types.SOCKET_TYPES.GAME.WORD_HINT,
+      data: this.wordHint.join("")
+    })
+  }
+
   timeCallback() {
     this.time -= 1;
     Socket.emit(this.lobbyCode, {
       type: Types.SOCKET_TYPES.GAME.LOBBY_TIMER,
       data: this.time,
     });
+    if(this.time === 30 || this.time === 20) {
+      this.randomWord();
+    }
     if (this.time === 0) {
       clearInterval(this.timerIntervalId);
       this.timerIntervalId = null;
@@ -151,6 +174,7 @@ class Game {
 
   wordSelectCallback(data) {
     this.currentSelectedWord = data.toLowerCase();
+    this.wordHint = data.toLowerCase();
     let word = '';
     // eslint-disable-next-line no-unused-vars
     for (const wordAlpha of this.currentSelectedWord.split('')) {
@@ -217,11 +241,12 @@ class Game {
   }
 
   startNewDrawing() {
-    this.isDrawingPlayerGotPoint = true;
+    this.isDrawingPlayerGotPoint = false;
     this.wordSelectionList = [];
     this.playerGuessed = {};
     this.time = Number(this.drawTime);
     this.drawingLinePath = null;
+    this.wordHintIndexObj = {};
     this.sendWordSelection();
   }
 
@@ -278,7 +303,7 @@ class Game {
   processComments(lobbyCode, data) {
     this.checkAndSetWord(lobbyCode, data);
     Socket.emit(lobbyCode, {
-      type: Types.SOCKET_TYPES.GAME.LOBBY_CHAT,
+      type: Types.SOCKET_TYPES.CHAT.CHAT.SERVER,
       data,
     });
   }

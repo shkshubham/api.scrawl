@@ -2,6 +2,7 @@ import Database from '../database';
 import Logger from '../utils/logger';
 import Socket from '../services/socket.service';
 import Types from '../types/types';
+import LobbyProcess from './lobby.process';
 
 class SocketProcess {
   static async processClientOnConnected({clientId, userId}) {
@@ -20,16 +21,22 @@ class SocketProcess {
   }
 
   static async processClientOnDisconnected(socketId) {
-    const user = await Database.User.findOne({
-      socketId,
-    });
-    if (user) {
-      Logger.normal('Disconnected', user._id);
-      Socket.emit(Types.SOCKET_TYPES.LOOKING.PLAYERS_LEAVED, user);
-      await user.update({
-        socketId: null,
-      });
+    try {
+      const user = await Database.User.findOne({
+        socketId,
+      }).select(["_id", "socketId"]);
+      if (user) {
+        Logger.normal('Disconnected', user._id);
+        Socket.emit(Types.SOCKET_TYPES.LOOKING.PLAYERS_LEAVED, user);
+        LobbyProcess.onPlayerDisconnectCheckAndDestroyLobby(user._id)
+        await user.update({
+          socketId: null,
+        });
+      }
+    } catch(err) {
+      console.log("ERROR", err)
     }
+
   }
 }
 
